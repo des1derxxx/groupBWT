@@ -3,6 +3,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { CreateAuthDto } from './dto/create-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -26,8 +27,8 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
-  async signUp(payload: CreateUserDto) {
-    const { firstname, lastname, email, password } = payload;
+  async signUp(createUserDto: CreateAuthDto) {
+    const { firstname, lastname, email, password } = createUserDto;
 
     const existingUser = await this.usersService.findOneBy(email);
     if (existingUser) {
@@ -43,6 +44,9 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    return newUser;
+    const payload = { sub: newUser.id, email: newUser.email };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 }
