@@ -21,6 +21,6 @@ model Users {
   lastname String 
   email String @unique
   password String 
-  createAt DateTime @default(now())
+  createdAt DateTime @default(now())
 
 }

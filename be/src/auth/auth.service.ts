@@ -1,26 +1,48 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+  async signIn(email: string, pass: string) {
+    const user = await this.usersService.findOneBy(email);
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const payload = { sub: user.id, email: user.email };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
+  async signUp(payload: CreateUserDto) {
+    const { firstname, lastname, email, password } = payload;
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    const existingUser = await this.usersService.findOneBy(email);
+    if (existingUser) {
+      throw new UnauthorizedException('Email already in use');
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await this.usersService.create({
+      firstname,
+      lastname,
+      email,
+      password: hashedPassword,
+    });
+
+    return newUser;
   }
 }
