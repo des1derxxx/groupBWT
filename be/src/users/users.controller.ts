@@ -19,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { BaseUser } from './dto/user.dto';
+import { CurrentUser } from './decorators/current-user.decorator';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -34,8 +35,7 @@ export class UsersController {
     description: 'Профиль успешно получен',
     type: BaseUser,
   })
-  async getUserData(@Req() req) {
-    const userId = req.user.sub;
+  async getUserData(@CurrentUser('sub') userId: string) {
     const user = await this.usersService.findOne(userId);
     return user;
   }

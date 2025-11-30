@@ -1,36 +1,35 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Notification } from "@mantine/core";
 import { loginUser } from "./loginApi";
-import type { LoginData } from "./loginApi";
+import { loginSchema } from "../../../components/schemas/authSchemas";
+import type { LoginFormData } from "../../../components/schemas/authSchemas";
+import { FormInput } from "../../../components/ui/auth/FormInput";
+import { SubmitButton } from "../../../components/ui/auth/SubmitButton";
+import { FormNotification } from "../../../components/ui/auth/FormNotification";
 
 const Login = () => {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, touchedFields },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onTouched",
   });
 
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
+  const [notification, setNotification] = useState({
+    message: "",
+    color: "green" as "red" | "green",
+    visible: false,
   });
-
-  const [touched, setTouched] = useState({
-    email: false,
-    password: false,
-  });
-
-  const [notification, setNotification] = useState<{
-    message: string;
-    color: "red" | "green";
-    visible: boolean;
-  }>({ message: "", color: "green", visible: false });
 
   const mutation = useMutation({
-    mutationFn: (data: LoginData) => loginUser(data),
+    mutationFn: loginUser,
     onSuccess: (data: any) => {
       localStorage.setItem("access_token", data.access_token);
       setNotification({
@@ -38,7 +37,6 @@ const Login = () => {
         color: "green",
         visible: true,
       });
-
       setTimeout(() => navigate("/gallery"), 1500);
     },
     onError: (error: any) => {
@@ -50,88 +48,25 @@ const Login = () => {
     },
   });
 
-  const validateField = (name: string, value: string) => {
-    switch (name) {
-      case "email":
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-          return "Введите корректный email адрес";
-        break;
-      case "password":
-        if (value.length < 1) return "Введите пароль";
-        break;
-      default:
-        return "";
-    }
-    return "";
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (touched[name as keyof typeof formData]) {
-      setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
-    }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
-  };
-
-  const handleSubmit = () => {
-    const newErrors: typeof errors = {
-      email: "",
-      password: "",
-    };
-
-    (Object.keys(formData) as Array<keyof typeof formData>).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-
-    setErrors(newErrors);
-    setTouched({
-      email: true,
-      password: true,
-    });
-
-    const hasErrors = Object.values(newErrors).some((err) => err !== "");
-
-    if (!hasErrors) {
-      mutation.mutate({
-        email: formData.email,
-        password: formData.password,
-      });
-    }
+  const onSubmit = (data: LoginFormData) => {
+    mutation.mutate(data);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleSubmit();
+      handleSubmit(onSubmit)();
     }
   };
 
   return (
     <>
-      {notification.visible && (
-        <Notification
-          color={notification.color}
-          onClose={() =>
-            setNotification((prev) => ({ ...prev, visible: false }))
-          }
-          title={notification.color === "green" ? "Успех" : "Ошибка"}
-          style={{
-            position: "fixed",
-            top: "20px",
-            right: "20px",
-            zIndex: 9999,
-          }}
-        >
-          {notification.message}
-        </Notification>
-      )}
+      <FormNotification
+        visible={notification.visible}
+        message={notification.message}
+        color={notification.color}
+        onClose={() => setNotification((prev) => ({ ...prev, visible: false }))}
+      />
+
       <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center p-4 overflow-auto">
         <div className="relative w-full max-w-md my-8">
           <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-gray-700">
@@ -142,52 +77,41 @@ const Login = () => {
               <p className="text-gray-400 text-lg">Войдите в свой аккаунт</p>
             </div>
 
-            <div className="space-y-5">
-              {(["email", "password"] as Array<keyof typeof formData>).map(
-                (field) => (
-                  <div key={field}>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      {field === "email" ? "Электронная почта" : "Пароль"}
-                    </label>
-                    <input
-                      type={field === "password" ? "password" : "text"}
-                      name={field}
-                      value={formData[field]}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      onKeyPress={handleKeyPress}
-                      className={`w-full px-5 py-3 bg-gray-900 bg-opacity-50 border ${
-                        errors[field] && touched[field]
-                          ? "border-red-500"
-                          : "border-gray-600"
-                      } rounded-xl focus:bg-gray-900 focus:border-purple-500 focus:ring-4 focus:ring-purple-500 focus:ring-opacity-30 outline-none transition-all duration-300 text-white placeholder-gray-500`}
-                      placeholder={
-                        field === "email"
-                          ? "ivan@example.com"
-                          : "Введите пароль"
-                      }
-                    />
-                    {errors[field] && touched[field] && (
-                      <p className="text-red-400 text-xs mt-1">
-                        {errors[field]}
-                      </p>
-                    )}
-                  </div>
-                )
-              )}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <FormInput
+                name="email"
+                label="Электронная почта"
+                type="text"
+                placeholder="ivan@example.com"
+                register={register}
+                error={errors.email}
+                touched={touchedFields.email}
+                onKeyPress={handleKeyPress}
+              />
 
-              <button
-                onClick={handleSubmit}
-                disabled={mutation.isPending}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-purple-500/50 mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+              <FormInput
+                name="password"
+                label="Пароль"
+                type="password"
+                placeholder="Введите пароль"
+                register={register}
+                error={errors.password}
+                touched={touchedFields.password}
+                onKeyPress={handleKeyPress}
+              />
+
+              <SubmitButton
+                isLoading={mutation.isPending}
+                loadingText="Вход..."
               >
-                {mutation.isPending ? "Вход..." : "Войти"}
-              </button>
+                Войти
+              </SubmitButton>
 
               <div className="text-center mt-6">
                 <p className="text-gray-400">
                   Нет аккаунта?{" "}
                   <button
+                    type="button"
                     onClick={() => navigate("/register")}
                     className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
                   >
@@ -195,7 +119,7 @@ const Login = () => {
                   </button>
                 </p>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>

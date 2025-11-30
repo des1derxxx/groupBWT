@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { PrismaExceptionFilter } from '../common/filters/prisma-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,9 +13,11 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Authorization',
   });
 
+  app.useGlobalFilters(new PrismaExceptionFilter());
+
   const config = new DocumentBuilder()
-    .setTitle('Your API Title')
-    .setDescription('Your API Description')
+    .setTitle('Ralo Ivan')
+    .setDescription('Ralo Ivan')
     .setVersion('1.0')
     .build();
 

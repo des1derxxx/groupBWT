@@ -14,13 +14,8 @@ export class AuthService {
   async signIn(email: string, pass: string) {
     const user = await this.usersService.findOneBy(email);
 
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    const isPasswordValid = await bcrypt.compare(pass, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+    if (!user || !(await bcrypt.compare(pass, user.password))) {
+      throw new UnauthorizedException('Неверный email или пароль');
     }
     const payload = { sub: user.id, email: user.email };
     return {
@@ -29,11 +24,6 @@ export class AuthService {
   }
   async signUp(createUserDto: CreateAuthDto) {
     const { firstname, lastname, email, password } = createUserDto;
-
-    const existingUser = await this.usersService.findOneBy(email);
-    if (existingUser) {
-      throw new UnauthorizedException('Email already in use');
-    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 

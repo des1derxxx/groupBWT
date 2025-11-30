@@ -1,21 +1,16 @@
-import { createBrowserRouter } from "react-router-dom";
-import Home from "./pages/home/home";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Register from "./pages/auth/register/register";
 import Gallery from "./pages/gallery/gallery";
 import Layout from "./components/Layout";
 import Login from "./pages/auth/login/login";
 import Profile from "./pages/profile/profile";
-import { PublicRoute } from "./components/PublicRoute";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PublicRoute } from "./components/routes/PublicRoute";
+import { ProtectedRoute } from "./components/routes/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
     element: <Layout />,
     children: [
-      {
-        path: "/",
-        element: <Home />,
-      },
       {
         path: "/register",
         element: (
@@ -47,6 +42,10 @@ const router = createBrowserRouter([
             <Profile />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "*",
+        element: <Navigate to="/profile" replace />,
       },
     ],
   },

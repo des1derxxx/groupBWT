@@ -1,5 +1,5 @@
 const Gallery = () => {
-  return <div>Gallety page</div>;
+  return <div className="grow">Gallety page</div>;
 };
 
 export default Gallery;

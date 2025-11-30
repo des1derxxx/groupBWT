@@ -1,45 +1,35 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Notification } from "@mantine/core";
 import { registerUser } from "./registerApi";
-import type { RegisterData } from "./registerApi";
+import { registerSchema } from "../../../components/schemas/authSchemas";
+import type { RegisterFormData } from "../../../components/schemas/authSchemas";
+import { FormInput } from "../../../components/ui/auth/FormInput";
+import { SubmitButton } from "../../../components/ui/auth/SubmitButton";
+import { FormNotification } from "../../../components/ui/auth/FormNotification";
 
 const Register = () => {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    firstname: "",
-    lastname: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, touchedFields },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onBlur",
   });
 
-  const [errors, setErrors] = useState({
-    firstname: "",
-    lastname: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const [notification, setNotification] = useState({
+    message: "",
+    color: "green" as "red" | "green",
+    visible: false,
   });
-
-  const [touched, setTouched] = useState({
-    firstname: false,
-    lastname: false,
-    email: false,
-    password: false,
-    confirmPassword: false,
-  });
-
-  const [notification, setNotification] = useState<{
-    message: string;
-    color: "red" | "green";
-    visible: boolean;
-  }>({ message: "", color: "green", visible: false });
 
   const mutation = useMutation({
-    mutationFn: (data: RegisterData) => registerUser(data),
+    mutationFn: registerUser,
     onSuccess: (data: any) => {
       localStorage.setItem("access_token", data.access_token);
       setNotification({
@@ -47,7 +37,6 @@ const Register = () => {
         color: "green",
         visible: true,
       });
-
       setTimeout(() => navigate("/gallery"), 1500);
     },
     onError: (error: any) => {
@@ -59,182 +48,101 @@ const Register = () => {
     },
   });
 
-  const validateField = (name: string, value: string) => {
-    switch (name) {
-      case "firstname":
-      case "lastname":
-        if (value.length < 2 || value.length > 50)
-          return "Длина должна быть от 2 до 50 символов";
-        if (/\d/.test(value)) return "Не должно содержать цифры";
-        break;
-      case "email":
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-          return "Введите корректный email адрес";
-        break;
-      case "password":
-        if (value.length < 8) return "Минимум 8 символов";
-        if (!/[a-z]/.test(value))
-          return "Должна быть хотя бы одна строчная буква";
-        if (!/[A-Z]/.test(value))
-          return "Должна быть хотя бы одна заглавная буква";
-        if (!/\d/.test(value)) return "Должна быть хотя бы одна цифра";
-        break;
-      case "confirmPassword":
-        if (value !== formData.password) return "Пароли не совпадают";
-        break;
-      default:
-        return "";
-    }
-    return "";
+  const onSubmit = (data: RegisterFormData) => {
+    const { confirmPassword, ...registerData } = data;
+    mutation.mutate(registerData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (touched[name as keyof typeof formData]) {
-      setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
-    }
-
-    if (name === "password" && touched.confirmPassword) {
-      setErrors((prev) => ({
-        ...prev,
-        confirmPassword:
-          formData.confirmPassword !== value ? "Пароли не совпадают" : "",
-      }));
-    }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
-  };
-
-  const handleSubmit = () => {
-    const newErrors: typeof errors = {
-      firstname: "",
-      lastname: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    };
-
-    (Object.keys(formData) as Array<keyof typeof formData>).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-
-    setErrors(newErrors);
-    setTouched({
-      firstname: true,
-      lastname: true,
-      email: true,
-      password: true,
-      confirmPassword: true,
-    });
-
-    const hasErrors = Object.values(newErrors).some((err) => err !== "");
-
-    if (!hasErrors) {
-      mutation.mutate({
-        firstname: formData.firstname,
-        lastname: formData.lastname,
-        email: formData.email,
-        password: formData.password,
-      });
-    }
-  };
+  const fields = [
+    {
+      name: "firstname" as const,
+      label: "Имя",
+      type: "text",
+      placeholder: "Иван",
+    },
+    {
+      name: "lastname" as const,
+      label: "Фамилия",
+      type: "text",
+      placeholder: "Иванов",
+    },
+    {
+      name: "email" as const,
+      label: "Электронная почта",
+      type: "text",
+      placeholder: "ivan@example.com",
+    },
+    {
+      name: "password" as const,
+      label: "Пароль",
+      type: "password",
+      placeholder: "Минимум 8 символов",
+    },
+    {
+      name: "confirmPassword" as const,
+      label: "Подтвердите пароль",
+      type: "password",
+      placeholder: "Повторите пароль",
+    },
+  ];
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center p-4 overflow-auto">
-      {notification.visible && (
-        <Notification
-          color={notification.color}
-          onClose={() =>
-            setNotification((prev) => ({ ...prev, visible: false }))
-          }
-          title={notification.color === "green" ? "Успех" : "Ошибка"}
-          style={{
-            position: "fixed",
-            top: "20px",
-            right: "20px",
-            zIndex: 9999,
-          }}
-        >
-          {notification.message}
-        </Notification>
-      )}
-      <div className="relative w-full max-w-md my-8">
-        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-gray-700">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
-              Добро пожаловать
-            </h1>
-            <p className="text-gray-400 text-lg">Создайте новый аккаунт</p>
-          </div>
+    <>
+      <FormNotification
+        visible={notification.visible}
+        message={notification.message}
+        color={notification.color}
+        onClose={() => setNotification((prev) => ({ ...prev, visible: false }))}
+      />
 
-          <div className="space-y-5">
-            {(
-              [
-                "firstname",
-                "lastname",
-                "email",
-                "password",
-                "confirmPassword",
-              ] as Array<keyof typeof formData>
-            ).map((field) => (
-              <div key={field}>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                  {field === "firstname"
-                    ? "Имя"
-                    : field === "lastname"
-                      ? "Фамилия"
-                      : field === "email"
-                        ? "Электронная почта"
-                        : field === "password"
-                          ? "Пароль"
-                          : "Подтвердите пароль"}
-                </label>
-                <input
-                  type={field.includes("password") ? "password" : "text"}
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`w-full px-5 py-3 bg-gray-900 bg-opacity-50 border ${
-                    errors[field] && touched[field]
-                      ? "border-red-500"
-                      : "border-gray-600"
-                  } rounded-xl focus:bg-gray-900 focus:border-purple-500 focus:ring-4 focus:ring-purple-500 focus:ring-opacity-30 outline-none transition-all duration-300 text-white placeholder-gray-500`}
-                  placeholder={
-                    field === "firstname"
-                      ? "Иван"
-                      : field === "lastname"
-                        ? "Иванов"
-                        : field === "email"
-                          ? "ivan@example.com"
-                          : field === "password"
-                            ? "Минимум 8 символов"
-                            : "Повторите пароль"
-                  }
+      <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center p-4 overflow-auto">
+        <div className="relative w-full max-w-md my-8">
+          <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-gray-700">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
+                Добро пожаловать
+              </h1>
+              <p className="text-gray-400 text-lg">Создайте новый аккаунт</p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              {fields.map((field) => (
+                <FormInput
+                  key={field.name}
+                  name={field.name}
+                  label={field.label}
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  register={register}
+                  error={errors[field.name]}
+                  touched={touchedFields[field.name]}
                 />
-                {errors[field] && touched[field] && (
-                  <p className="text-red-400 text-xs mt-1">{errors[field]}</p>
-                )}
-              </div>
-            ))}
+              ))}
 
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-xl hover:shadow-purple-500/50 mt-6"
-            >
-              Зарегистрироваться
-            </button>
+              <SubmitButton
+                isLoading={mutation.isPending}
+                loadingText="Регистрация..."
+              >
+                Зарегистрироваться
+              </SubmitButton>
+
+              <div className="text-center mt-6">
+                <p className="text-gray-400">
+                  Уже есть аккаунт?{" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/login")}
+                    className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+                  >
+                    Войти
+                  </button>
+                </p>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
