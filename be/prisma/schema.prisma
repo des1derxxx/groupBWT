@@ -24,3 +24,12 @@ model Users {
   createdAt DateTime @default(now())
 
 }
+
+model Galleries {
+
+  id String @id @default(uuid())
+  title String 
+  description String?
+  createdAt DateTime @default(now())
+
+}
