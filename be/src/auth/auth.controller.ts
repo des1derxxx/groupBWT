@@ -4,6 +4,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BaseUser } from '../users/dto/user.dto';
 import { Public } from './public-strategy';
 import { AuthTokenDto } from './dto/auth-token.dto';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
@@ -18,8 +20,8 @@ export class AuthController {
     type: AuthTokenDto,
   })
   @ApiResponse({ status: 401, description: 'Неверные учётные данные' })
-  signIn(@Body() signInDto: Record<string, any>) {
-    return this.authService.signIn(signInDto.email, signInDto.password);
+  signIn(@Body() dto: LoginDto) {
+    return this.authService.signIn(dto.email, dto.password);
   }
   @Public()
   @HttpCode(HttpStatus.OK)
@@ -31,13 +33,12 @@ export class AuthController {
     type: BaseUser,
   })
   @ApiResponse({ status: 400, description: 'Email уже используется' })
-  signUp(@Body() signUpDto: Record<string, any>) {
+  signUp(@Body() dto: RegisterDto) {
     const payload = {
-      firstname: signUpDto.firstname,
-      lastname: signUpDto.lastname,
-      email: signUpDto.email,
-      password: signUpDto.password,
-      createdAt: new Date(),
+      firstname: dto.firstname,
+      lastname: dto.lastname,
+      email: dto.email,
+      password: dto.password,
     };
     return this.authService.signUp(payload);
   }

@@ -13,7 +13,21 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const user = await this.prisma.users.findUnique({ where: { id } });
+    const user = await this.prisma.users.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        firstname: true,
+        lastname: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
     return user;
   }
 
