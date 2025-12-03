@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { GalleriesService } from './galleries.service';
 import { CreateGalleryDto } from './dto/createGalleries.dto';
 import { UpdateGalleryDto } from './dto/updateGalleries.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { BaseGallery } from './dto/gallery.dto';
+import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 
 @ApiTags('galleries')
 @Controller('galleries')
@@ -17,8 +31,8 @@ export class GalleriesController {
     description: 'Галерея успешно создана',
     type: BaseGallery,
   })
-  create(@Body() dto: CreateGalleryDto) {
-    return this.galleriesService.create(dto);
+  create(@Body() dto: CreateGalleryDto, @CurrentUser('sub') userId: string) {
+    return this.galleriesService.create(dto, userId);
   }
 
   @Get()

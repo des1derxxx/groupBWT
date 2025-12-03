@@ -75,3 +75,28 @@
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
 }
+
+@media (max-width: 36em) {
+  .mobileCollapse {
+    display: block;
+  }
+}
+
+.mobileMenu {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 0.5rem;
+}
+
+.mobileCollapse {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  right: 0;
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}

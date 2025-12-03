@@ -59,13 +59,11 @@ const Profile = () => {
       const passwordChanged = !!variables.password;
 
       if (emailChanged || passwordChanged) {
-        localStorage.removeItem("access_token");
         setNotification({
-          message: "Данные обновлены. Войдите заново с новыми данными.",
+          message: "Данные обновлены.",
           color: "green",
           visible: true,
         });
-        setTimeout(() => navigate("/login"), 2000);
       } else {
         setNotification({
           message: "Данные успешно обновлены!",

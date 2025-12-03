@@ -17,7 +17,7 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(pass, user.password))) {
       throw new UnauthorizedException('Неверный email или пароль');
     }
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
@@ -34,7 +34,7 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const payload = { sub: newUser.id, email: newUser.email };
+    const payload = { sub: newUser.id };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
