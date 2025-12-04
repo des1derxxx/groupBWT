@@ -28,6 +28,33 @@ export class GalleriesService {
     return galleries;
   }
 
+  async getAllUsersGallery(
+    userId: string,
+    page: number = 1,
+    limit: number = 9,
+  ) {
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.prisma.galleries.findMany({
+        where: { userId: userId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.galleries.count({
+        where: { userId: userId },
+      }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+    };
+  }
+
   async findOne(id: string) {
     const gallery = await this.prisma.galleries.findUnique({
       where: { id },

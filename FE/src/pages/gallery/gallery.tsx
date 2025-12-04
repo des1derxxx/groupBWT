@@ -1,18 +1,22 @@
-import { getAllGalley, deleteOneGallery } from "./galleryApi";
-import type { GalleryItem } from "./galleryApi";
+import { getAllGalleryUser, deleteOneGallery } from "./galleryApi";
+import type { GalleryItem, GalleryResponse } from "./galleryApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GalleryButton } from "../../components/ui/auth/GalleryButton";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Button } from "@mantine/core";
+import { Button, Menu, Pagination } from "@mantine/core";
+import { IconAlignLeft } from "@tabler/icons-react";
 
 const Gallery = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: AllGallery } = useQuery({
-    queryKey: ["AllGallery"],
-    queryFn: getAllGalley,
-    retry: false,
+  const [page, setPage] = useState(1);
+  const limit = 9;
+
+  const { data: AllGallery, isLoading } = useQuery<GalleryResponse>({
+    queryKey: ["AllGallery", page],
+    queryFn: () => getAllGalleryUser(page, limit),
+    placeholderData: (previousData) => previousData,
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -24,6 +28,11 @@ const Gallery = () => {
     mutationFn: (id: string) => deleteOneGallery(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["AllGallery"] });
+      const currentItems = AllGallery?.items?.length ?? 0;
+      if (currentItems === 1 && page > 1) {
+        setPage(page - 1);
+      }
+
       setShowModal(false);
       setSelectedGallery(null);
     },
@@ -48,6 +57,14 @@ const Gallery = () => {
     setSelectedGallery(null);
   };
 
+  if (isLoading && !AllGallery) {
+    return (
+      <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
+        <p className="text-white text-xl">Загрузка...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex">
       <div className="w-full p-10">
@@ -62,18 +79,50 @@ const Gallery = () => {
         </div>
         <div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 
-                    bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 
-                    border border-gray-700 text-center"
+                      bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 
+                      border border-gray-700 text-center"
         >
-          {!AllGallery || AllGallery.length === 0 ? (
+          {!AllGallery?.items || AllGallery?.items.length === 0 ? (
             <p className="text-gray-300">Ничего не нашли</p>
           ) : (
-            AllGallery.map((item: GalleryItem) => (
+            AllGallery.items.map((item: GalleryItem) => (
               <div
                 key={item.id}
                 className="p-5 bg-gray-700 rounded-xl border border-gray-600"
                 onClick={() => navigate(`/gallery/details/${item.id}`)}
               >
+                <div className="flex justify-end">
+                  <Menu shadow="md" width={200}>
+                    <Menu.Target>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <IconAlignLeft size={20} className="text-gray-400" />
+                      </Button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                          e.stopPropagation();
+                          navigate(`/gallery/edit/${item.id}`);
+                        }}
+                      >
+                        Изменить
+                      </Menu.Item>
+                      <Menu.Item
+                        color="red"
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                          e.stopPropagation();
+                          handleDeleteClick(item);
+                        }}
+                      >
+                        Удалить
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </div>
                 <h2 className="text-lg font-bold text-white line-clamp-2">
                   {item.title}
                 </h2>
@@ -83,9 +132,6 @@ const Gallery = () => {
                 <p className="text-gray-400 text-sm mt-2">
                   {new Date(item.createdAt).toLocaleDateString()}
                 </p>
-                <p className="text-gray-400 text-sm mt-2">
-                  {item?.user?.email}
-                </p>
                 <GalleryButton
                   color="blue"
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
@@ -93,7 +139,7 @@ const Gallery = () => {
                     navigate(`/gallery/edit/${item.id}`);
                   }}
                 >
-                  Edit
+                  Изменить
                 </GalleryButton>
                 <GalleryButton
                   color="red"
@@ -105,12 +151,23 @@ const Gallery = () => {
                     deleteMutation.isPending && selectedGallery?.id === item.id
                   }
                 >
-                  Delete
+                  Удалить
                 </GalleryButton>
               </div>
             ))
           )}
         </div>
+        {(AllGallery?.total ?? 0) > limit && (
+          <div className="flex justify-center mt-10">
+            <Pagination
+              total={Math.ceil((AllGallery?.total ?? 0) / limit)}
+              value={page}
+              onChange={setPage}
+              color="violet"
+              size="lg"
+            />
+          </div>
+        )}
       </div>
 
       {showModal && selectedGallery && (

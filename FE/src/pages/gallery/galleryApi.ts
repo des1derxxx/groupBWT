@@ -15,13 +15,25 @@ export interface GalleryItem {
   user: User;
 }
 
+export interface GalleryResponse {
+  items: GalleryItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface AddOneGallery {
   title: string;
   description?: string;
 }
 
-export const getAllGalley = async () => {
-  const response = await api.get(`/galleries`);
+export const getAllGalleryUser = async (
+  page: number = 1,
+  limit: number = 9
+) => {
+  const response = await api.get(
+    `/galleries/userGallery?page=${page}&limit=${limit}`
+  );
   return response.data;
 };
 

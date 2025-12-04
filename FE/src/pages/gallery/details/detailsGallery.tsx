@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { getOneGallery, type GalleryItem } from "../galleryApi";
 import { useQuery } from "@tanstack/react-query";
+import { GalleryButton } from "../../../components/ui/auth/GalleryButton";
 
 const DetailsGallery = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +33,6 @@ const DetailsGallery = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="text-sm">{gallery.user.email}</span>
             </div>
           </div>
           <div className="p-8 space-y-6">
@@ -94,13 +94,22 @@ const DetailsGallery = () => {
                 </div>
               </div>
             </div>
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col gap-4 pt-4">
               <button
                 onClick={() => navigate(`/gallery/edit/${gallery.id}`)}
                 className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-cyan-500/50"
               >
                 Редактировать
               </button>
+              <GalleryButton
+                color="gray"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(`/gallery`);
+                }}
+              >
+                Отмена
+              </GalleryButton>
             </div>
           </div>
         </div>

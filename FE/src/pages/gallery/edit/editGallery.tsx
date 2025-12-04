@@ -6,7 +6,7 @@ import {
   type GalleryItem,
   type AddOneGallery,
 } from "../galleryApi";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -15,10 +15,12 @@ import {
 } from "../../../components/schemas/addGallerySchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitButton } from "../../../components/ui/auth/SubmitButton";
+import { GalleryButton } from "../../../components/ui/auth/GalleryButton";
 
 const EditGallery = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   // const [initialData, setInitialData] = useState<GalleryItem | null>(null);
 
   const fields = [
@@ -59,6 +61,7 @@ const EditGallery = () => {
       editOneGallery(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["AllGallery"] });
+      navigate(`/gallery/details/${id}`);
     },
   });
 
@@ -111,6 +114,15 @@ const EditGallery = () => {
                 >
                   Сохранить изменения
                 </SubmitButton>
+                <GalleryButton
+                  color="gray"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate(`/gallery`);
+                  }}
+                >
+                  Отмена
+                </GalleryButton>
               </form>
             </div>
           </div>
