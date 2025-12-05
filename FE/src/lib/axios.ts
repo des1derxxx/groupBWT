@@ -32,6 +32,12 @@ api.interceptors.response.use(
       error.response?.data
     );
 
+    if (error.response?.status === 401) {
+      console.log("Проблема с токеном ");
+      localStorage.removeItem("access_token");
+      window.location.href = "/auth/login";
+    }
+
     return Promise.reject(error);
   }
 );

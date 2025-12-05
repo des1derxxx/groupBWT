@@ -1,11 +1,11 @@
-import { getAllGalleryUser, deleteOneGallery } from "./galleryApi";
-import type { GalleryItem, GalleryResponse } from "./galleryApi";
+import { getAllGalleryUser, deleteOneGallery } from "@/api/galleryApi";
+import type { GalleryItem, GalleryResponse } from "@/api/galleryApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GalleryButton } from "../../components/ui/auth/GalleryButton";
+import { GalleryButton } from "@/components/ui/auth/GalleryButton";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Button, Menu, Pagination } from "@mantine/core";
-import { IconAlignLeft } from "@tabler/icons-react";
+import { Button, Pagination } from "@mantine/core";
+import { IconDotsVertical } from "@tabler/icons-react";
 
 const Gallery = () => {
   const navigate = useNavigate();
@@ -92,36 +92,43 @@ const Gallery = () => {
                 onClick={() => navigate(`/gallery/details/${item.id}`)}
               >
                 <div className="flex justify-end">
-                  <Menu shadow="md" width={200}>
-                    <Menu.Target>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                      >
-                        <IconAlignLeft size={20} className="text-gray-400" />
-                      </Button>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item
-                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                          e.stopPropagation();
-                          navigate(`/gallery/edit/${item.id}`);
-                        }}
-                      >
-                        Изменить
-                      </Menu.Item>
-                      <Menu.Item
-                        color="red"
-                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                          e.stopPropagation();
-                          handleDeleteClick(item);
-                        }}
-                      >
-                        Удалить
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
+                  <div className="relative group mb-2">
+                    <IconDotsVertical
+                      size={20}
+                      className="text-white hover:text-gray-600 cursor-pointer transition-colors"
+                    />
+
+                    <div className="absolute right-0 top-8 min-w-[160px] z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                      <div className="translate-y-[-100px] group-hover:translate-y-0 transition-transform duration-300 rounded-lg shadow-xl  overflow-hidden">
+                        <button
+                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                            e.stopPropagation();
+                            navigate(`/gallery/edit/${item.id}`);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 mb-1"
+                          style={{
+                            transitionDelay: "100ms",
+                            transitionProperty: "opacity, transform",
+                          }}
+                        >
+                          Редактировать
+                        </button>
+                        <button
+                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                            e.stopPropagation();
+                            handleDeleteClick(item);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-600"
+                          style={{
+                            transitionDelay: "250ms",
+                            transitionProperty: "opacity, transform",
+                          }}
+                        >
+                          Удалить
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <h2 className="text-lg font-bold text-white line-clamp-2">
                   {item.title}
@@ -132,27 +139,6 @@ const Gallery = () => {
                 <p className="text-gray-400 text-sm mt-2">
                   {new Date(item.createdAt).toLocaleDateString()}
                 </p>
-                <GalleryButton
-                  color="blue"
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.stopPropagation();
-                    navigate(`/gallery/edit/${item.id}`);
-                  }}
-                >
-                  Изменить
-                </GalleryButton>
-                <GalleryButton
-                  color="red"
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.stopPropagation();
-                    handleDeleteClick(item);
-                  }}
-                  isLoading={
-                    deleteMutation.isPending && selectedGallery?.id === item.id
-                  }
-                >
-                  Удалить
-                </GalleryButton>
               </div>
             ))
           )}

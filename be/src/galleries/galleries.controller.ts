@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { GalleriesService } from './galleries.service';
 import { CreateGalleryDto } from './dto/createGalleries.dto';
@@ -51,13 +53,10 @@ export class GalleriesController {
   @ApiOperation({ summary: 'Получить список всех галерей конкретного юзера' })
   getAllUsersGallery(
     @CurrentUser('sub') userId: string,
-    @Query('page') page: string,
-    @Query('limit') limit: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(9), ParseIntPipe) limit: number,
   ) {
-    const pageNum = page ? parseInt(page, 10) : 1;
-    const limitNum = limit ? parseInt(limit, 10) : 9;
-
-    return this.galleriesService.getAllUsersGallery(userId, pageNum, limitNum);
+    return this.galleriesService.getAllUsersGallery(userId, page, limit);
   }
 
   @Get(':id')

@@ -1,14 +1,14 @@
 import { useForm } from "react-hook-form";
-import { FormInput } from "../../../components/ui/auth/FormInput";
+import { FormInput } from "@/components/ui/auth/FormInput";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addOneGallery } from "../galleryApi";
+import { addOneGallery } from "@/api/galleryApi";
 import {
   addGallerySchema,
   type AddGallerySchema,
-} from "../../../components/schemas/addGallerySchema";
+} from "@/components/schemas/addGallerySchema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { SubmitButton } from "../../../components/ui/auth/SubmitButton";
+import { SubmitButton } from "@/components/ui/auth/SubmitButton";
 
 const AddGallery = () => {
   const navigate = useNavigate();

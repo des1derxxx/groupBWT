@@ -1,21 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FormInput } from "../../../components/ui/auth/FormInput";
+import { FormInput } from "@/components/ui/auth/FormInput";
 import {
   editOneGallery,
   getOneGallery,
   type GalleryItem,
   type AddOneGallery,
-} from "../galleryApi";
+} from "@/api/galleryApi";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   addGallerySchema,
   type AddGallerySchema,
-} from "../../../components/schemas/addGallerySchema";
+} from "@/components/schemas/addGallerySchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitButton } from "../../../components/ui/auth/SubmitButton";
-import { GalleryButton } from "../../../components/ui/auth/GalleryButton";
+import { SubmitButton } from "@/components/ui/auth/SubmitButton";
+import { GalleryButton } from "@/components/ui/auth/GalleryButton";
 
 const EditGallery = () => {
   const { id } = useParams<{ id: string }>();

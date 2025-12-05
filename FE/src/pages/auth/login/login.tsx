@@ -3,12 +3,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "./loginApi";
-import { loginSchema } from "../../../components/schemas/authSchemas";
-import type { LoginFormData } from "../../../components/schemas/authSchemas";
-import { FormInput } from "../../../components/ui/auth/FormInput";
-import { SubmitButton } from "../../../components/ui/auth/SubmitButton";
-import { FormNotification } from "../../../components/ui/auth/FormNotification";
+import { loginUser } from "@/api/loginApi";
+import { loginSchema } from "@/components/schemas/authSchemas";
+import type { LoginFormData } from "@/components/schemas/authSchemas";
+import { FormInput } from "@/components/ui/auth/FormInput";
+import { SubmitButton } from "@/components/ui/auth/SubmitButton";
+import { FormNotification } from "@/components/ui/auth/FormNotification";
+import FormWrapper from "@/components/ui/auth/FormWrapper";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -67,62 +68,44 @@ const Login = () => {
         onClose={() => setNotification((prev) => ({ ...prev, visible: false }))}
       />
 
-      <div className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center p-4 overflow-auto">
-        <div className="relative w-full max-w-md my-8">
-          <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-gray-700">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
-                С возвращением
-              </h1>
-              <p className="text-gray-400 text-lg">Войдите в свой аккаунт</p>
-            </div>
+      <FormWrapper
+        title="С возвращением"
+        description="Войдите в свой аккаунт"
+        hasHeader={false}
+        bottom={{
+          text: "Нет аккаунта?",
+          buttonLabel: "Зарегистрироваться",
+          buttonOnClick: () => navigate("/register"),
+        }}
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <FormInput
+            name="email"
+            label="Электронная почта"
+            type="text"
+            placeholder="ivan@example.com"
+            register={register}
+            error={errors.email}
+            touched={touchedFields.email}
+            onKeyPress={handleKeyPress}
+          />
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              <FormInput
-                name="email"
-                label="Электронная почта"
-                type="text"
-                placeholder="ivan@example.com"
-                register={register}
-                error={errors.email}
-                touched={touchedFields.email}
-                onKeyPress={handleKeyPress}
-              />
+          <FormInput
+            name="password"
+            label="Пароль"
+            type="password"
+            placeholder="Введите пароль"
+            register={register}
+            error={errors.password}
+            touched={touchedFields.password}
+            onKeyPress={handleKeyPress}
+          />
 
-              <FormInput
-                name="password"
-                label="Пароль"
-                type="password"
-                placeholder="Введите пароль"
-                register={register}
-                error={errors.password}
-                touched={touchedFields.password}
-                onKeyPress={handleKeyPress}
-              />
-
-              <SubmitButton
-                isLoading={mutation.isPending}
-                loadingText="Вход..."
-              >
-                Войти
-              </SubmitButton>
-
-              <div className="text-center mt-6">
-                <p className="text-gray-400">
-                  Нет аккаунта?{" "}
-                  <button
-                    type="button"
-                    onClick={() => navigate("/register")}
-                    className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
-                  >
-                    Зарегистрироваться
-                  </button>
-                </p>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+          <SubmitButton isLoading={mutation.isPending} loadingText="Вход...">
+            Войти
+          </SubmitButton>
+        </form>
+      </FormWrapper>
     </>
   );
 };

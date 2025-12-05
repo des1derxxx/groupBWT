@@ -1,11 +1,14 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { getOneGallery, type GalleryItem } from "../galleryApi";
+import { getOneGallery, type GalleryItem } from "@/api/galleryApi";
 import { useQuery } from "@tanstack/react-query";
-import { GalleryButton } from "../../../components/ui/auth/GalleryButton";
+import { GalleryButton } from "@/components/ui/auth/GalleryButton";
+import imageUrl from "@/assets/123123.jpg";
+import { useState } from "react";
 
 const DetailsGallery = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: gallery } = useQuery<GalleryItem>({
     queryKey: ["gallery", id],
@@ -25,14 +28,18 @@ const DetailsGallery = () => {
             <h1 className="text-3xl font-bold text-white mb-2">
               {gallery.title}
             </h1>
-            <div className="flex items-center gap-2 text-cyan-100">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                  clipRule="evenodd"
-                />
-              </svg>
+            <div className="flex items-center gap-2 text-cyan-100"></div>
+          </div>
+          <div className="w-full flex justify-center items-center p-15">
+            <div
+              className="relative w-16 h-16 group cursor-pointer overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300"
+              onClick={() => setSelectedImage(imageUrl)}
+            >
+              <img
+                src={imageUrl}
+                alt="Gallery image"
+                className="max-w-full h-auto rounded-lg shadow-md object-cover"
+              />
             </div>
           </div>
           <div className="p-8 space-y-6">
@@ -114,6 +121,25 @@ const DetailsGallery = () => {
           </div>
         </div>
       </div>
+
+      {selectedImage && (
+        <div
+          className="fixed inset-0  bg-opacity-90 z-50 flex items-center justify-center p-4 backdrop-blur-md"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 transition-colors"
+            onClick={() => setSelectedImage(null)}
+          ></button>
+
+          <img
+            src={selectedImage}
+            alt="Full size"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };
