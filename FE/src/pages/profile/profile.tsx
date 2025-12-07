@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { changeUserData, getUserData } from "@/api/profileApi";
-import { profileSchema } from "@/components/schemas/authSchemas";
+import { profileSchema, profileFields } from "@/components/schemas/authSchemas";
 import type { ProfileFormData } from "@/components/schemas/authSchemas";
 import { FormInput } from "@/components/ui/auth/FormInput";
 import { SubmitButton } from "@/components/ui/auth/SubmitButton";
@@ -99,39 +99,6 @@ const Profile = () => {
     mutation.mutate(dataToUpdate);
   };
 
-  const fields = [
-    {
-      name: "firstname" as const,
-      label: "Имя",
-      type: "text",
-      placeholder: "Иван",
-    },
-    {
-      name: "lastname" as const,
-      label: "Фамилия",
-      type: "text",
-      placeholder: "Иванов",
-    },
-    {
-      name: "email" as const,
-      label: "Электронная почта",
-      type: "text",
-      placeholder: "ivan@example.com",
-    },
-    {
-      name: "password" as const,
-      label: "Новый пароль (оставьте пустым, если не хотите менять)",
-      type: "password",
-      placeholder: "Оставьте пустым, чтобы не менять",
-    },
-    {
-      name: "confirmPassword" as const,
-      label: "Подтвердите новый пароль",
-      type: "password",
-      placeholder: "Повторите пароль",
-    },
-  ];
-
   if (isLoading) {
     return (
       <div className="h-screen w-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
@@ -155,7 +122,7 @@ const Profile = () => {
         hasHeader={true}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {fields.map((field) => (
+          {profileFields.map((field) => (
             <FormInput
               key={field.name}
               name={field.name}

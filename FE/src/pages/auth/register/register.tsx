@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "@/api/registerApi";
-import { registerSchema } from "@/components/schemas/authSchemas";
+import { registerUser, type RegisterData } from "@/api/registerApi";
+import { registerSchema, registerFields } from "@/components/schemas/authSchemas";
 import type { RegisterFormData } from "@/components/schemas/authSchemas";
 import { FormInput } from "@/components/ui/auth/FormInput";
 import { SubmitButton } from "@/components/ui/auth/SubmitButton";
@@ -50,42 +50,20 @@ const Register = () => {
   });
 
   const onSubmit = (data: RegisterFormData) => {
-    const { confirmPassword, ...registerData } = data;
+    if (!data.password) {
+      return;
+    }
+  
+    const registerData: RegisterData = {
+      firstname: data.firstname,
+      lastname: data.lastname,
+      email: data.email,
+      password: data.password,
+    };
+
+    
     mutation.mutate(registerData);
   };
-
-  const fields = [
-    {
-      name: "firstname" as const,
-      label: "Имя",
-      type: "text",
-      placeholder: "Иван",
-    },
-    {
-      name: "lastname" as const,
-      label: "Фамилия",
-      type: "text",
-      placeholder: "Иванов",
-    },
-    {
-      name: "email" as const,
-      label: "Электронная почта",
-      type: "text",
-      placeholder: "ivan@example.com",
-    },
-    {
-      name: "password" as const,
-      label: "Пароль",
-      type: "password",
-      placeholder: "Минимум 8 символов",
-    },
-    {
-      name: "confirmPassword" as const,
-      label: "Подтвердите пароль",
-      type: "password",
-      placeholder: "Повторите пароль",
-    },
-  ];
 
   return (
     <>
@@ -106,7 +84,7 @@ const Register = () => {
         }}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {fields.map((field) => (
+          {registerFields.map((field) => (
             <FormInput
               key={field.name}
               name={field.name}
