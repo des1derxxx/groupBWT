@@ -37,4 +37,18 @@ model Galleries {
   userId   String
   user     Users @relation(fields: [userId], references: [id])
 
+  images Images[]
+
+}
+
+model Images { 
+
+  id String @id @default(uuid())
+  path String
+  originalFilename String
+  createdAt DateTime @default(now())
+
+  galleryId String  
+  gallery Galleries @relation(fields: [galleryId], references: [id])
+
 }
