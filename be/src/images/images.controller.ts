@@ -11,6 +11,9 @@ import {
   UploadedFiles,
   ParseFilePipe,
   MaxFileSizeValidator,
+  Query,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { ImagesService } from './images.service';
 import { CreateImageDto } from './dto/create-image.dto';
@@ -27,7 +30,7 @@ export class ImagesController {
   uploadImages(
     @UploadedFiles(
       new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 })], // 5MB
+        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000_000 })],
       }),
     )
     files: Express.Multer.File[],
@@ -36,23 +39,27 @@ export class ImagesController {
     console.log(files);
     return this.imagesService.uploadImage(files, dto);
   }
-  @Get()
-  findAll() {
-    return this.imagesService.findAll();
+  @Delete('deleteImage/:id')
+  remove(@Param('id') id: string, dto: CreateImageDto) {
+    return this.imagesService.remove(id, dto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.imagesService.findOne(+id);
+  @Post('moveImage/:id')
+  moveImage(@Param('id') id: string, @Body() dto: CreateImageDto) {
+    return this.imagesService.moveImage(id, dto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateImageDto: UpdateImageDto) {
-    return this.imagesService.update(+id, updateImageDto);
+  @Post('copyImage/:id')
+  copyImage(@Param('id') id: string, @Body() dto: CreateImageDto) {
+    return this.imagesService.copyImage(id, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.imagesService.remove(+id);
+  @Get('gallery/:galleryId')
+  getImagesByGallery(
+    @Param('galleryId') galleryId: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.imagesService.getImagesByGallery(galleryId, page, limit);
   }
 }

@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Images } from '@prisma/client';
-import { connect } from 'http2';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class ImagesService {
@@ -18,11 +18,11 @@ export class ImagesService {
     const uploaded: Images[] = [];
 
     const gallery = await this.prisma.galleries.findUnique({
-      where: { id: '9b5de647-5425-46f6-b551-17e0cc0db2e5' },
+      where: { id: dto.galleryId },
     });
 
     if (!gallery) {
-      throw new Error(`Галерея не найдена`);
+      throw new NotFoundException('Галерея не найдена');
     }
 
     for (const file of files) {
@@ -45,19 +45,115 @@ export class ImagesService {
     return { message: 'uploaded', count: uploaded.length, images: uploaded };
   }
 
-  findAll() {
-    return `This action returns all images`;
+  async remove(id: string, dto: CreateImageDto) {
+    const uploadDir = path.join(process.cwd());
+
+    const image = await this.prisma.images.findUnique({ where: { id: id } });
+    if (!image) {
+      throw new Error(`Картинка не найдена`);
+    }
+    const filePath = path.join(uploadDir, image.path);
+    await fs.rm(filePath);
+
+    await this.prisma.images.delete({ where: { id: id } });
+
+    return `Delete ${image.originalFilename}`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} image`;
+  async moveImage(id: string, dto: CreateImageDto) {
+    const gallery = await this.prisma.galleries.findUnique({
+      where: { id: dto.galleryId },
+    });
+    if (!gallery) {
+      throw new NotFoundException('Галерея не найдена');
+    }
+
+    const image = await this.prisma.images.findUnique({ where: { id: id } });
+    if (!image) {
+      throw new NotFoundException(`Картинка не найдена`);
+    }
+
+    if (image.galleryId === dto.galleryId) {
+      throw new BadRequestException('Картинка уже в этой галерее');
+    }
+
+    const updatedImage = await this.prisma.images.update({
+      where: { id: id },
+      data: {
+        galleryId: dto.galleryId,
+      },
+    });
+
+    return {
+      message: `Картинка перенесена в ${gallery.title}`,
+      image: updatedImage,
+    };
   }
 
-  update(id: number, updateImageDto: UpdateImageDto) {
-    return `This action updates a #${id} image`;
+  async copyImage(id: string, dto: CreateImageDto) {
+    const gallery = await this.prisma.galleries.findUnique({
+      where: { id: dto.galleryId },
+    });
+    if (!gallery) {
+      throw new NotFoundException(`Галерея не найдена`);
+    }
+
+    const image = await this.prisma.images.findUnique({ where: { id: id } });
+    if (!image) {
+      throw new NotFoundException(`Картинка не найдена`);
+    }
+
+    if (image.galleryId === dto.galleryId) {
+      throw new BadRequestException('Нельзя скопировать в эту галерею');
+    }
+
+    const imageToNewGallery = await this.prisma.images.create({
+      data: {
+        path: image.path,
+        originalFilename: image.originalFilename,
+        gallery: { connect: { id: gallery.id } },
+      },
+    });
+
+    return {
+      message: `Картинка скорирована в ${gallery.title}`,
+      image: imageToNewGallery,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} image`;
+  async getImagesByGallery(
+    galleryId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    const gallery = await this.prisma.galleries.findUnique({
+      where: { id: galleryId },
+    });
+
+    if (!gallery) {
+      throw new NotFoundException('Галерея не найдена');
+    }
+
+    const skip = (page - 1) * limit;
+    const images = await this.prisma.images.findMany({
+      where: { galleryId },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+    const total = await this.prisma.images.count({
+      where: { galleryId },
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      galleryId,
+      page,
+      limit,
+      total,
+      totalPages,
+      images,
+    };
   }
 }
