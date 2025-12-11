@@ -14,43 +14,56 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { ImagesService } from './images.service';
 import { CreateImageDto } from './dto/create-image.dto';
-import { UpdateImageDto } from './dto/update-image.dto';
-import { promises as fs } from 'fs';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { MoveImageDto } from './dto/move-image.dto';
 
 @Controller('images')
 export class ImagesController {
   constructor(private readonly imagesService: ImagesService) {}
 
   @Post('upload')
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(
+    FilesInterceptor('files', 20, {
+      fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+          cb(null, true);
+        } else {
+          cb(
+            new BadRequestException('Можно загружать только изображения'),
+            false,
+          );
+        }
+      },
+    }),
+  )
   uploadImages(
     @UploadedFiles(
       new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000_000 })],
+        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 })],
       }),
     )
     files: Express.Multer.File[],
     @Body() dto: CreateImageDto,
   ) {
-    console.log(files);
     return this.imagesService.uploadImage(files, dto);
   }
+
   @Delete('deleteImage/:id')
-  remove(@Param('id') id: string, dto: CreateImageDto) {
-    return this.imagesService.remove(id, dto);
+  remove(@Param('id') id: string) {
+    return this.imagesService.remove(id);
   }
 
   @Post('moveImage/:id')
-  moveImage(@Param('id') id: string, @Body() dto: CreateImageDto) {
+  moveImage(@Param('id') id: string, @Body() dto: MoveImageDto) {
     return this.imagesService.moveImage(id, dto);
   }
 
   @Post('copyImage/:id')
-  copyImage(@Param('id') id: string, @Body() dto: CreateImageDto) {
+  copyImage(@Param('id') id: string, @Body() dto: MoveImageDto) {
     return this.imagesService.copyImage(id, dto);
   }
 
