@@ -25,7 +25,7 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-xl bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 backdrop-blur-xl bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-[600px] max-h-[80vh] overflow-y-auto">
         <h1 className="text-white font-semibold mb-6 text-center text-2xl">
           Загрузка фото

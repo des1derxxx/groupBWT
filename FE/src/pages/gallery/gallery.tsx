@@ -144,17 +144,16 @@ const Gallery = () => {
             ))
           )}
         </div>
-        {(AllGallery?.total ?? 0) > limit && (
-          <div className="flex justify-center mt-10">
-            <Pagination
-              total={Math.ceil((AllGallery?.total ?? 0) / limit)}
-              value={page}
-              onChange={setPage}
-              color="violet"
-              size="lg"
-            />
-          </div>
-        )}
+
+        <div className="flex justify-center mt-10">
+          <Pagination
+            total={Math.ceil((AllGallery?.total ?? 0) / limit)}
+            value={page}
+            onChange={setPage}
+            color="violet"
+            size="lg"
+          />
+        </div>
       </div>
 
       {showModal && selectedGallery && (
