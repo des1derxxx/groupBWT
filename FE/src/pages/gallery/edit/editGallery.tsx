@@ -15,7 +15,7 @@ import {
 } from "@/components/schemas/addGallerySchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitButton } from "@/components/ui/auth/SubmitButton";
-import { GalleryButton } from "@/components/ui/auth/GalleryButton";
+import { BackButton } from "@/components/ui/button/backButton";
 
 const EditGallery = () => {
   const { id } = useParams<{ id: string }>();
@@ -83,7 +83,8 @@ const EditGallery = () => {
     }
   }, [gallery, reset]);
   return (
-    <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
+    <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center relative">
+      <BackButton />
       <div className="w-full max-w-2xl p-10">
         <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-gray-700">
           <div className="flex justify-between items-center mb-8">
@@ -114,15 +115,6 @@ const EditGallery = () => {
                 >
                   Сохранить изменения
                 </SubmitButton>
-                <GalleryButton
-                  color="gray"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate(`/gallery`);
-                  }}
-                >
-                  Отмена
-                </GalleryButton>
               </form>
             </div>
           </div>

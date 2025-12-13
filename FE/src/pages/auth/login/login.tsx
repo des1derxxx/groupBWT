@@ -38,7 +38,7 @@ const Login = () => {
         color: "green",
         visible: true,
       });
-      setTimeout(() => navigate("/gallery"), 1500);
+      setTimeout(() => navigate("/gallery"), 1000);
     },
     onError: (error: any) => {
       setNotification({
@@ -53,8 +53,15 @@ const Login = () => {
     mutation.mutate(data);
   };
 
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSubmit(onSubmit)(e);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       handleSubmit(onSubmit)();
     }
   };
@@ -78,7 +85,7 @@ const Login = () => {
           buttonOnClick: () => navigate("/register"),
         }}
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleFormSubmit} className="space-y-5" noValidate>
           <FormInput
             name="email"
             label="Электронная почта"

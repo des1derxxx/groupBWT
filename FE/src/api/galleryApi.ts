@@ -1,5 +1,4 @@
 import api from "@/lib/axios";
-
 export interface User {
   id: string;
   firstname?: string;
@@ -25,6 +24,18 @@ export interface GalleryResponse {
 export interface AddOneGallery {
   title: string;
   description?: string;
+}
+
+export interface ImageItem {
+  id: string | number;
+  path: string;
+}
+
+export interface GalleryImagesData {
+  images: ImageItem[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 export const getAllGalleryUser = async (
@@ -55,4 +66,30 @@ export const getOneGallery = async (id: string) => {
 export const editOneGallery = async (id: string, data: AddOneGallery) => {
   const response = await api.patch(`/galleries/${id}`, data);
   return response.data;
+};
+
+export const getImages = async (
+  galleryId: string,
+  page: number,
+  limit: number
+) => {
+  const response = await api.get(
+    `/images/gallery/${galleryId}?page=${page}&limit=${limit}`
+  );
+  return response;
+};
+
+export const deleteOneImage = async (id: string) => {
+  const response = await api.delete(`/images/deleteImage/${id}`);
+  return response;
+};
+
+export const moveImage = async (id: string, galleryId: string) => {
+  const response = await api.post(`/images/moveImage/${id}`, { galleryId });
+  return response;
+};
+
+export const copyImage = async (id: string, galleryId: string) => {
+  const response = await api.post(`/images/copyImage/${id}`, { galleryId });
+  return response;
 };

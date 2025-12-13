@@ -9,6 +9,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { SubmitButton } from "@/components/ui/auth/SubmitButton";
+import { BackButton } from "@/components/ui/button/backButton";
 
 const AddGallery = () => {
   const navigate = useNavigate();
@@ -54,7 +55,8 @@ const AddGallery = () => {
   };
 
   return (
-    <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
+    <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center relative">
+      <BackButton />
       <div className="w-full max-w-2xl p-10">
         <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-gray-700">
           <div className="flex justify-between items-center mb-8">

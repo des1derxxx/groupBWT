@@ -35,7 +35,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log("Проблема с токеном ");
       localStorage.removeItem("access_token");
-      window.location.href = "/auth/login";
+      const currentPath = window.location.pathname;
+      if (!currentPath.includes("/login") && !currentPath.includes("/register")) {
+        window.location.href = "/auth/login";
+      }
     }
 
     return Promise.reject(error);
@@ -43,3 +46,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+

@@ -1,11 +1,11 @@
 import { getAllGalleryUser, deleteOneGallery } from "@/api/galleryApi";
 import type { GalleryItem, GalleryResponse } from "@/api/galleryApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GalleryButton } from "@/components/ui/auth/GalleryButton";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Button, Pagination } from "@mantine/core";
 import { IconDotsVertical } from "@tabler/icons-react";
+import { CorfirmDelete } from "@/components/ui/modal/corfirmDelete";
 
 const Gallery = () => {
   const navigate = useNavigate();
@@ -94,6 +94,7 @@ const Gallery = () => {
                 <div className="flex justify-end">
                   <div className="relative group mb-2">
                     <IconDotsVertical
+                      onClick={(e) => e.stopPropagation()}
                       size={20}
                       className="text-white hover:text-gray-600 cursor-pointer transition-colors"
                     />
@@ -157,24 +158,13 @@ const Gallery = () => {
       </div>
 
       {showModal && selectedGallery && (
-        <div className="fixed inset-0 backdrop-blur-xl bg-opacity-50 flex items-center justify-center z-1000">
-          <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-96 text-center">
-            <h2 className="text-xl font-bold text-white mb-4">
-              Подтвердите удаление
-            </h2>
-            <p className="text-gray-300 mb-6">
-              Вы уверены, что хотите удалить галерею{" "}
-              <strong>{selectedGallery.title}</strong>?
-            </p>
-            <div className="flex justify-between gap-4">
-              <GalleryButton color="gray" onClick={cancelDelete}>
-                Отмена
-              </GalleryButton>
-              <GalleryButton color="red" onClick={confirmDelete}>
-                Удалить
-              </GalleryButton>
-            </div>
-          </div>
+        <div>
+          {
+            <CorfirmDelete
+              cancelDelete={cancelDelete}
+              confirmDelete={confirmDelete}
+            />
+          }
         </div>
       )}
     </div>

@@ -1,0 +1,108 @@
+import { IconTrash, IconUpload } from "@tabler/icons-react";
+import { GalleryButton } from "@/components/ui/auth/GalleryButton";
+import type { FilePreview } from "@/api/imagesApi";
+import type { FC } from "react";
+
+type UploadImagesModalProps = {
+  isOpen: boolean;
+  selectedFiles: FilePreview[];
+  isPending: boolean;
+  onClose: () => void;
+  onFilesAdd: (files: FilePreview[]) => void;
+  onFileRemove: (index: number) => void;
+  onUpload: () => void;
+};
+
+export const UploadImagesModal: FC<UploadImagesModalProps> = ({
+  isOpen,
+  selectedFiles,
+  isPending,
+  onClose,
+  onFilesAdd,
+  onFileRemove,
+  onUpload,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 backdrop-blur-xl bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-[600px] max-h-[80vh] overflow-y-auto">
+        <h1 className="text-white font-semibold mb-6 text-center text-2xl">
+          Загрузка фото
+        </h1>
+
+        <div className="mb-6">
+          <label className="flex items-center justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition">
+            <IconUpload className="mr-2" />
+            <span>Выбрать изображения</span>
+            <input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                if (!e.target.files) return;
+
+                const files = Array.from(e.target.files).map((file) => ({
+                  file,
+                  preview: URL.createObjectURL(file),
+                }));
+
+                onFilesAdd(files);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        </div>
+
+        {selectedFiles.length > 0 && (
+          <div className="mb-6">
+            <p className="text-white mb-3">
+              Выбрано изображений: {selectedFiles.length}
+            </p>
+
+            <div className="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2">
+              {selectedFiles.map((item, index) => (
+                <div
+                  key={item.preview}
+                  className="relative group rounded-lg overflow-hidden bg-gray-700"
+                >
+                  <img
+                    src={item.preview}
+                    alt=""
+                    className="w-full h-32 object-cover"
+                  />
+
+                  <button
+                    onClick={() => onFileRemove(index)}
+                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition"
+                  >
+                    <IconTrash size={20} className="text-white" />
+                  </button>
+
+                  <p className="text-white text-xs p-2 truncate bg-gray-900 bg-opacity-75">
+                    {item.file.name}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between mt-6">
+          <GalleryButton color="gray" onClick={onClose}>
+            Отмена
+          </GalleryButton>
+
+          <GalleryButton
+            color="blue"
+            disabled={!selectedFiles.length || isPending}
+            onClick={onUpload}
+          >
+            {isPending ? "Загрузка..." : `Загрузить (${selectedFiles.length})`}
+          </GalleryButton>
+        </div>
+      </div>
+    </div>
+  );
+};
