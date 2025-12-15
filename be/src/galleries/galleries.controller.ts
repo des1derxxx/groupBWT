@@ -87,7 +87,7 @@ export class GalleriesController {
   @ApiOperation({ summary: 'Удалить галерею по ID' })
   @ApiResponse({ status: 204, description: 'Галерея успешно удалена' })
   @ApiResponse({ status: 404, description: 'Галерея не найдена' })
-  remove(@Param('id') id: string) {
-    return this.galleriesService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser('sub') userId: string) {
+    return this.galleriesService.remove(id, userId);
   }
 }
