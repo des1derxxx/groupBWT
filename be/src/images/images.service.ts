@@ -138,8 +138,8 @@ export class ImagesService {
       console.log(error);
     }
 
-    await this.prisma.galleries.update({
-      where: { id: image.galleryId },
+    await this.prisma.galleries.updateMany({
+      where: { id: image.galleryId, imagesCount: { gt: 0 } },
       data: {
         imagesCount: { decrement: 1 },
       },
@@ -187,6 +187,20 @@ export class ImagesService {
       },
     });
 
+    await this.prisma.galleries.updateMany({
+      where: { id: image.galleryId, imagesCount: { gt: 0 } },
+      data: {
+        imagesCount: { decrement: 1 },
+      },
+    });
+
+    await this.prisma.galleries.update({
+      where: { id: dto.galleryId },
+      data: {
+        imagesCount: { increment: 1 },
+      },
+    });
+
     return {
       message: `Картинка перенесена в ${gallery.title}`,
       image: updatedImage,
@@ -216,6 +230,13 @@ export class ImagesService {
         path: `/uploads/${newFileName}`,
         originalFilename: image.originalFilename,
         gallery: { connect: { id: gallery.id } },
+      },
+    });
+
+    await this.prisma.galleries.update({
+      where: { id: dto.galleryId },
+      data: {
+        imagesCount: { increment: 1 },
       },
     });
 

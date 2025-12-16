@@ -65,11 +65,15 @@ const DetailsGallery = () => {
 
   const { data: AllGallery } = useQuery<GalleryResponse>({
     queryKey: ["AllGallery", page],
-    queryFn: () => getAllGalleryUser(page, limit),
+    queryFn: () => getAllGalleryUser({ page, limit }),
     placeholderData: (previousData) => previousData,
   });
 
-  const { data: images, isLoading, isError } = useQuery({
+  const {
+    data: images,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["gallery-images", gallery?.id, page, limit],
     queryFn: () => getImages(gallery?.id!, page, limit),
     placeholderData: (prev) => prev,

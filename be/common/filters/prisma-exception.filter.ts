@@ -32,6 +32,19 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         errorResponse = new BadRequestException('Ошибка внешнего ключа');
         break;
 
+      case 'P2004': {
+        if (exception.meta?.constraint === 'images_count_non_negative') {
+          errorResponse = new BadRequestException(
+            'Количество изображений не может быть меньше 0',
+          );
+        } else {
+          errorResponse = new BadRequestException(
+            'Нарушено ограничение целостности данных',
+          );
+        }
+        break;
+      }
+
       default:
         errorResponse = new InternalServerErrorException(
           `Ошибка базы данных: ${exception.code}`,
