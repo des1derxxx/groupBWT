@@ -11,6 +11,7 @@ export interface GalleryItem {
   title: string;
   description: string;
   createdAt: string;
+  imagesCount: number;
   user: User;
 }
 
@@ -38,13 +39,23 @@ export interface GalleryImagesData {
   totalPages: number;
 }
 
-export const getAllGalleryUser = async (
-  page: number = 1,
-  limit: number = 9
-) => {
-  const response = await api.get(
-    `/galleries/userGallery?page=${page}&limit=${limit}`
-  );
+export const getAllGalleryUser = async (params: {
+  page: number;
+  limit: number;
+  search?: string;
+  sortBy?: "createdAt" | "title" | "imagesCount";
+  order?: "asc" | "desc";
+  from?: string;
+  to?: string;
+  minImages?: number;
+  maxImages?: number;
+}) => {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) query.append(key, String(value));
+  });
+
+  const response = await api.get(`/galleries/userGallery?${query.toString()}`);
   return response.data;
 };
 

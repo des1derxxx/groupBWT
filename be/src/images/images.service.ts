@@ -98,8 +98,18 @@ export class ImagesService {
               gallery: { connect: { id: gallery.id } },
             },
           });
+
           uploaded.push(image);
         }
+
+        await tx.galleries.update({
+          where: { id: gallery.id },
+          data: {
+            imagesCount: {
+              increment: uploaded.length,
+            },
+          },
+        });
       });
 
       return { message: 'uploaded', count: uploaded.length, images: uploaded };
@@ -119,8 +129,6 @@ export class ImagesService {
   }
 
   async remove(id: string, userId) {
-    const uploadDir = path.join(process.cwd());
-
     const image = await this.getUserImage(id, userId);
 
     const filePath = path.join(process.cwd(), image.path.replace(/^\//, ''));
@@ -129,6 +137,13 @@ export class ImagesService {
     } catch (error) {
       console.log(error);
     }
+
+    await this.prisma.galleries.update({
+      where: { id: image.galleryId },
+      data: {
+        imagesCount: { decrement: 1 },
+      },
+    });
 
     await this.prisma.images.delete({ where: { id: id } });
 

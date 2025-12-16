@@ -5,6 +5,8 @@ import { UpdateGalleryDto } from './dto/updateGalleries.dto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { ImagesService } from 'src/images/images.service';
+import { GalleryQueryDto } from './dto/galleryQuery.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class GalleriesService {
@@ -34,23 +36,65 @@ export class GalleriesService {
     return galleries;
   }
 
-  async getAllUsersGallery(
-    userId: string,
-    page: number = 1,
-    limit: number = 9,
-  ) {
+  async getAllUsersGallery(userId: string, query: GalleryQueryDto) {
+    const {
+      page,
+      limit,
+      search,
+      sortBy = 'createdAt',
+      order = 'desc',
+      from,
+      to,
+      minImages,
+      maxImages,
+    } = query;
+
     const skip = (page - 1) * limit;
+
+    const where: Prisma.GalleriesWhereInput = {
+      userId,
+    };
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (from || to) {
+      where.createdAt = {
+        ...(from && { gte: new Date(from) }),
+        ...(to && { lte: new Date(to) }),
+      };
+    }
+
+    if (minImages !== undefined || maxImages !== undefined) {
+      where.imagesCount = {
+        ...(minImages !== undefined && { gte: minImages }),
+        ...(maxImages !== undefined && { lte: maxImages }),
+      };
+    }
+    let orderBy: Prisma.GalleriesOrderByWithRelationInput;
+
+    if (sortBy === 'imagesCount') {
+      orderBy = {
+        imagesCount: order,
+      };
+    } else {
+      orderBy = {
+        [sortBy]: order,
+      };
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.galleries.findMany({
-        where: { userId: userId },
+        where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
       }),
-      this.prisma.galleries.count({
-        where: { userId: userId },
-      }),
+      this.prisma.galleries.count({ where }),
     ]);
 
     return {

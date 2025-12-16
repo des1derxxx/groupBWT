@@ -2,27 +2,67 @@ import { getAllGalleryUser, deleteOneGallery } from "@/api/galleryApi";
 import type { GalleryItem, GalleryResponse } from "@/api/galleryApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Pagination } from "@mantine/core";
 import { IconDotsVertical } from "@tabler/icons-react";
 import { CorfirmDelete } from "@/components/ui/modal/corfirmDelete";
+import { GalleryFilters } from "@/components/ui/filters/GalleryFilters";
 
 const Gallery = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const limit = 9;
-
-  const { data: AllGallery, isLoading } = useQuery<GalleryResponse>({
-    queryKey: ["AllGallery", page],
-    queryFn: () => getAllGalleryUser(page, limit),
-    placeholderData: (previousData) => previousData,
-  });
-
   const [showModal, setShowModal] = useState(false);
   const [selectedGallery, setSelectedGallery] = useState<GalleryItem | null>(
     null
   );
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"createdAt" | "title" | "imagesCount">(
+    "createdAt"
+  );
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [fromDate, setFromDate] = useState<string | undefined>(undefined);
+  const [toDate, setToDate] = useState<string | undefined>(undefined);
+  const [minImages, setMinImages] = useState<number | undefined>(undefined);
+  const [maxImages, setMaxImages] = useState<number | undefined>(undefined);
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, sortBy, order, fromDate, toDate, minImages, maxImages]);
+
+  const { data: AllGallery, isLoading } = useQuery<GalleryResponse>({
+    queryKey: [
+      "AllGallery",
+      page,
+      debouncedSearch,
+      sortBy,
+      order,
+      fromDate,
+      toDate,
+      minImages,
+      maxImages,
+    ],
+    queryFn: () =>
+      getAllGalleryUser({
+        page,
+        limit,
+        search: debouncedSearch,
+        sortBy,
+        order,
+        from: fromDate,
+        to: toDate,
+        minImages,
+        maxImages,
+      }),
+    placeholderData: (prev) => prev,
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteOneGallery(id),
@@ -56,6 +96,16 @@ const Gallery = () => {
     setShowModal(false);
     setSelectedGallery(null);
   };
+  const handleResetFilters = () => {
+    setSearch("");
+    setSortBy("createdAt");
+    setOrder("asc");
+    setFromDate(undefined);
+    setToDate(undefined);
+    setMinImages(undefined);
+    setMaxImages(undefined);
+    setPage(1);
+  };
 
   if (isLoading && !AllGallery) {
     return (
@@ -68,6 +118,23 @@ const Gallery = () => {
   return (
     <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex">
       <div className="w-full p-10">
+        <GalleryFilters
+          search={search}
+          sortBy={sortBy}
+          order={order}
+          fromDate={fromDate}
+          toDate={toDate}
+          minImages={minImages}
+          maxImages={maxImages}
+          onSearchChange={setSearch}
+          onSortByChange={setSortBy}
+          onOrderChange={setOrder}
+          onFromDateChange={setFromDate}
+          onToDateChange={setToDate}
+          onMinImagesChange={setMinImages}
+          onMaxImagesChange={setMaxImages}
+          onReset={handleResetFilters}
+        />
         <div className="pb-10 grid justify-items-end">
           <Button
             variant="filled"
@@ -136,6 +203,9 @@ const Gallery = () => {
                 </h2>
                 <p className="text-gray-300 line-clamp-2 whitespace-pre-wrap">
                   {item.description}
+                </p>
+                <p className="text-amber-400 font-semibold">
+                  Картинок: {item.imagesCount}
                 </p>
                 <p className="text-gray-400 text-sm mt-2">
                   {new Date(item.createdAt).toLocaleDateString()}

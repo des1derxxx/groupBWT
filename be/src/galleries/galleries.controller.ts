@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { BaseGallery } from './dto/gallery.dto';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
+import { GalleryQueryDto } from './dto/galleryQuery.dto';
 
 @ApiTags('galleries')
 @Controller('galleries')
@@ -53,10 +54,9 @@ export class GalleriesController {
   @ApiOperation({ summary: 'Получить список всех галерей конкретного юзера' })
   getAllUsersGallery(
     @CurrentUser('sub') userId: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(9), ParseIntPipe) limit: number,
+    @Query() query: GalleryQueryDto,
   ) {
-    return this.galleriesService.getAllUsersGallery(userId, page, limit);
+    return this.galleriesService.getAllUsersGallery(userId, query);
   }
 
   @Get(':id')
