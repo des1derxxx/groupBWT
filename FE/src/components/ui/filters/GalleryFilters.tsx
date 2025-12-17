@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IconX } from "@tabler/icons-react";
 
 export type SortByOption = "createdAt" | "title" | "imagesCount";
 export type OrderOption = "asc" | "desc";
@@ -19,6 +20,7 @@ export interface GalleryFiltersProps {
   onMinImagesChange: (value: number | undefined) => void;
   onMaxImagesChange: (value: number | undefined) => void;
   onReset: () => void;
+  cleanSearch: () => void;
 }
 
 const ChevronUp = () => (
@@ -67,6 +69,7 @@ export const GalleryFilters = ({
   onMinImagesChange,
   onMaxImagesChange,
   onReset,
+  cleanSearch,
 }: GalleryFiltersProps) => {
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
@@ -96,6 +99,10 @@ export const GalleryFilters = ({
                    transition-all duration-200 placeholder-gray-400
                    focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50
                    hover:border-gray-500"
+        />
+        <IconX
+          onClick={cleanSearch}
+          className={`absolute right-7 top-1/2 ${search ? "visible" : "invisible"} -translate-y-1/2 text-gray-400 hover:text-white cursor-pointer transition-colors`}
         />
       </div>
 

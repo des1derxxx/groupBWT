@@ -34,6 +34,7 @@ import { BackButton } from "@/components/ui/button/backButton";
 import { CorfirmDelete } from "@/components/ui/modal/corfirmDelete";
 import { ImageTransferModal } from "@/components/ui/modal/ImageTransferModal";
 import { UploadImagesModal } from "@/components/ui/modal/UploadImagesModal";
+import { FormNotification } from "@/components/ui/auth/FormNotification";
 
 const DetailsGallery = () => {
   const { id } = useParams<{ id: string }>();
@@ -56,6 +57,12 @@ const DetailsGallery = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedGalleryId, setSelectedGalleryId] = useState<string>("");
   const [selectedFiles, setSelectedFiles] = useState<FilePreview[]>([]);
+
+  const [notification, setNotification] = useState({
+    message: "",
+    color: "green" as "red" | "green",
+    visible: false,
+  });
 
   const { data: gallery } = useQuery<GalleryItem>({
     queryKey: ["gallery", id],
@@ -107,8 +114,20 @@ const DetailsGallery = () => {
       queryClient.invalidateQueries({
         queryKey: ["gallery-images", variables.galleryId, page, limit],
       });
+      setNotification({
+        message: "Картинки успешно загружены!",
+        color: "green",
+        visible: true,
+      });
       setShowUploadModal(false);
       setSelectedFiles([]);
+    },
+    onError: (error: any) => {
+      setNotification({
+        message: error.response?.data?.message || error.message,
+        color: "red",
+        visible: true,
+      });
     },
   });
 
@@ -140,7 +159,6 @@ const DetailsGallery = () => {
     mutationFn: ({ id, galleryId }: { id: string; galleryId: string }) =>
       copyImageApi(id, galleryId),
     onSuccess: (_data, variables) => {
-      // Инвалидируем кэш для целевой галереи (куда скопировали)
       queryClient.invalidateQueries({
         queryKey: ["gallery-images", variables.galleryId],
       });
@@ -230,6 +248,13 @@ const DetailsGallery = () => {
   return (
     <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center p-6 relative">
       <BackButton />
+
+      <FormNotification
+        visible={notification.visible}
+        message={notification.message}
+        color={notification.color}
+        onClose={() => setNotification((prev) => ({ ...prev, visible: false }))}
+      />
       <div className="w-full max-w-3xl">
         <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-gray-700">
           <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-8">

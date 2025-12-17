@@ -97,14 +97,16 @@ const Gallery = () => {
     setSelectedGallery(null);
   };
   const handleResetFilters = () => {
-    setSearch("");
-    setSortBy("createdAt");
-    setOrder("asc");
     setFromDate(undefined);
     setToDate(undefined);
     setMinImages(undefined);
     setMaxImages(undefined);
     setPage(1);
+  };
+
+  const handleCleanSearch = () => {
+    setSearch("");
+    setDebouncedSearch("");
   };
 
   if (isLoading && !AllGallery) {
@@ -134,6 +136,7 @@ const Gallery = () => {
           onMinImagesChange={setMinImages}
           onMaxImagesChange={setMaxImages}
           onReset={handleResetFilters}
+          cleanSearch={handleCleanSearch}
         />
         <div className="pb-10 grid justify-items-end">
           <Button

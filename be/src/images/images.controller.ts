@@ -27,6 +27,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
+import { MaxSizeValidator } from '../../common/filters/MaxSizeValidator';
 
 @Controller('images')
 export class ImagesController {
@@ -66,7 +67,11 @@ export class ImagesController {
   uploadImages(
     @UploadedFiles(
       new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 })],
+        validators: [
+          new MaxSizeValidator({
+            maxSize: 5_000_000,
+          }),
+        ],
       }),
     )
     files: Express.Multer.File[],
