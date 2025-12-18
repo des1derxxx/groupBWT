@@ -60,14 +60,25 @@ export class ImagesService {
     return images;
   }
 
-  private async saveFile(file: Express.Multer.File, uploadDir: string) {
-    const ext = path.extname(file.originalname);
-    const fileName = `${Date.now()}-${randomUUID()}${ext}`;
+  private async saveFile(
+    file: Express.Multer.File,
+    uploadDir: string,
+    fileName: string,
+  ) {
     const filePath = path.join(uploadDir, fileName);
 
-    await fs.writeFile(filePath, file.buffer);
+    try {
+      await fs.writeFile(filePath, file.buffer);
+    } catch (err) {
+      throw new BadRequestException('Ошибка при сохранении файла');
+    }
 
-    return { fileName, filePath };
+    const publicPath = `/uploads/${fileName}`;
+    return { fileName, filePath, publicPath };
+  }
+
+  private generateFileName(id: string, originalName: string) {
+    return `${id}${path.extname(originalName)}`;
   }
 
   async uploadImage(
@@ -80,28 +91,30 @@ export class ImagesService {
     const savedFilePaths: string[] = [];
     const uploaded: Images[] = [];
     const gallery = await this.getUserGallery(dto.galleryId, userId);
-
     try {
-      const savedFiles = await Promise.all(
-        files.map((file) => this.saveFile(file, uploadDir)),
-      );
-      savedFiles.forEach((f) => savedFilePaths.push(f.filePath));
       await this.prisma.$transaction(async (tx) => {
-        for (let i = 0; i < files.length; i++) {
-          const { fileName } = savedFiles[i];
-          const file = files[i];
-
+        for (const file of files) {
           const image = await tx.images.create({
             data: {
-              path: `/uploads/${fileName}`,
+              path: '',
               originalFilename: file.originalname,
               gallery: { connect: { id: gallery.id } },
             },
           });
+          const fileName = this.generateFileName(image.id, file.originalname);
+          const { filePath, publicPath } = await this.saveFile(
+            file,
+            uploadDir,
+            fileName,
+          );
+          savedFilePaths.push(filePath);
+          const updatedImage = await tx.images.update({
+            where: { id: image.id },
+            data: { path: publicPath },
+          });
 
-          uploaded.push(image);
+          uploaded.push(updatedImage);
         }
-
         await tx.galleries.update({
           where: { id: gallery.id },
           data: {
@@ -117,14 +130,14 @@ export class ImagesService {
       console.error('Ошибка:', err);
 
       await Promise.all(
-        savedFilePaths.map(async (path) => {
+        savedFilePaths.map(async (filePath) => {
           try {
-            await fs.unlink(path);
+            await fs.unlink(filePath);
           } catch {}
         }),
       );
 
-      throw new BadRequestException('Ошибка');
+      throw new BadRequestException('Ошибка загрузки файлов');
     }
   }
 

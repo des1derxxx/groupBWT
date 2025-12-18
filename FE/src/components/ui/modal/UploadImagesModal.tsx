@@ -25,6 +25,7 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
 }) => {
   if (!isOpen) return null;
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const FILE_NAME_REGEX = /^[a-zA-Z0-9._-]+$/;
 
   return (
     <div className="fixed inset-0 backdrop-blur-xl bg-opacity-50 flex items-center justify-center z-50">
@@ -54,6 +55,16 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
                       title: "Файл слишком большой",
                       message: `«${file.name}» превышает 5 МБ`,
                       autoClose: 5000,
+                    });
+                    return;
+                  }
+
+                  if (!FILE_NAME_REGEX.test(file.name)) {
+                    notifications.show({
+                      color: "red",
+                      title: "Недопустимое имя файла",
+                      message:
+                        "Имя файла должно содержать только английские буквы, цифры, точки, дефисы или подчёркивания",
                     });
                     return;
                   }

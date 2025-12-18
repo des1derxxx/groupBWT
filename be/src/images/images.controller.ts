@@ -28,6 +28,7 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import { MaxSizeValidator } from '../../common/filters/MaxSizeValidator';
+import { FileNameValidator } from '../../common/filters/FileNameValidator';
 
 @Controller('images')
 export class ImagesController {
@@ -71,6 +72,7 @@ export class ImagesController {
           new MaxSizeValidator({
             maxSize: 5_000_000,
           }),
+          new FileNameValidator({}),
         ],
       }),
     )
