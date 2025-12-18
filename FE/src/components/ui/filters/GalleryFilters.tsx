@@ -109,7 +109,7 @@ export const GalleryFilters = ({
       <div className="rounded-xl bg-gray-700 bg-opacity-50 backdrop-blur-xl shadow-2xl border border-gray-600 overflow-hidden">
         <button
           onClick={() => setShowSort(!showSort)}
-          className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-600 hover:bg-opacity-30 transition-colors"
+          className=" flex items-center justify-between px-6 py-4 hover:bg-gray-600 hover:bg-opacity-30 transition-colors"
         >
           <h3 className="text-sm font-semibold text-white">Сортировка</h3>
           <span className="text-gray-400">
@@ -129,7 +129,7 @@ export const GalleryFilters = ({
                   onChange={(e) =>
                     onSortByChange(e.target.value as SortByOption)
                   }
-                  className="w-full rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2.5 text-sm 
+                  className=" rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2.5 text-sm 
                            cursor-pointer transition-all duration-200
                            focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50
                            hover:border-gray-500"
@@ -147,7 +147,7 @@ export const GalleryFilters = ({
                 <select
                   value={order}
                   onChange={(e) => onOrderChange(e.target.value as OrderOption)}
-                  className="w-full rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2.5 text-sm 
+                  className=" rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2.5 text-sm 
                            cursor-pointer transition-all duration-200
                            focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50
                            hover:border-gray-500"
@@ -164,7 +164,7 @@ export const GalleryFilters = ({
       <div className="rounded-xl bg-gray-700 bg-opacity-50 backdrop-blur-xl shadow-2xl border border-gray-600 overflow-hidden">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-600 hover:bg-opacity-30 transition-colors"
+          className=" flex items-center justify-between px-6 py-4 hover:bg-gray-600 hover:bg-opacity-30 transition-colors"
         >
           <h3 className="text-sm font-semibold text-white">Фильтры</h3>
           <span className="text-gray-400">
@@ -185,7 +185,7 @@ export const GalleryFilters = ({
                   onChange={(e) =>
                     onFromDateChange(e.target.value || undefined)
                   }
-                  className={`w-full rounded-lg border bg-gray-800 text-white px-4 py-2.5 text-sm 
+                  className={` rounded-lg border bg-gray-800 text-white px-4 py-2.5 text-sm 
                            transition-all duration-200
                            focus:outline-none focus:ring-2 focus:ring-opacity-50
                            hover:border-gray-500
@@ -204,7 +204,7 @@ export const GalleryFilters = ({
                   type="date"
                   value={toDate ?? ""}
                   onChange={(e) => onToDateChange(e.target.value || undefined)}
-                  className={`w-full rounded-lg border bg-gray-800 text-white px-4 py-2.5 text-sm 
+                  className={` rounded-lg border bg-gray-800 text-white px-4 py-2.5 text-sm 
                            transition-all duration-200
                            focus:outline-none focus:ring-2 focus:ring-opacity-50
                            hover:border-gray-500
@@ -229,7 +229,7 @@ export const GalleryFilters = ({
                     )
                   }
                   min="0"
-                  className={`w-full rounded-lg border bg-gray-800 text-white px-4 py-2.5 text-sm 
+                  className={` rounded-lg border bg-gray-800 text-white px-4 py-2.5 text-sm 
                            transition-all duration-200 placeholder-gray-500
                            focus:outline-none focus:ring-2 focus:ring-opacity-50
                            hover:border-gray-500
@@ -255,7 +255,7 @@ export const GalleryFilters = ({
                     )
                   }
                   min="0"
-                  className={`w-full rounded-lg border bg-gray-800 text-white px-4 py-2.5 text-sm 
+                  className={` rounded-lg border bg-gray-800 text-white px-4 py-2.5 text-sm 
                            transition-all duration-200 placeholder-gray-500
                            focus:outline-none focus:ring-2 focus:ring-opacity-50
                            hover:border-gray-500

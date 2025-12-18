@@ -168,15 +168,16 @@ const Gallery = () => {
                       size={20}
                       className="text-white hover:text-gray-600 cursor-pointer transition-colors"
                     />
+                    <div className="absolute right-0 top-5 min-w-[160px] h-3 z-10" />
 
-                    <div className="absolute right-0 top-8 min-w-[160px] z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                      <div className="translate-y-[-100px] group-hover:translate-y-0 transition-transform duration-300 rounded-lg shadow-xl  overflow-hidden">
+                    <div className="absolute right-0 top-8 min-w-[160px] z-10 opacity-0 invisible  group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                      <div className="translate-y-[-20px] group-hover:translate-y-0 transition-transform duration-300 rounded-lg shadow-xl overflow-hidden">
                         <button
                           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                             e.stopPropagation();
                             navigate(`/gallery/edit/${item.id}`);
                           }}
-                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 mb-1"
+                          className="w-full text-left px-4 py-2.5 mb-0.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200"
                           style={{
                             transitionDelay: "100ms",
                             transitionProperty: "opacity, transform",
@@ -189,7 +190,7 @@ const Gallery = () => {
                             e.stopPropagation();
                             handleDeleteClick(item);
                           }}
-                          className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-600"
+                          className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200"
                           style={{
                             transitionDelay: "250ms",
                             transitionProperty: "opacity, transform",

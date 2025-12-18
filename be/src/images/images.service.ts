@@ -249,7 +249,7 @@ export class ImagesService {
   async getImagesByGallery(
     galleryId: string,
     page: number = 1,
-    limit: number = 10,
+    limit: number = 9,
     userId,
   ) {
     await this.getUserGallery(galleryId, userId);

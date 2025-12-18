@@ -42,7 +42,7 @@ const DetailsGallery = () => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = 9;
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [deleteImage, setDeleteImage] = useState<string | null>(null);
   const [transferModal, setTransferModal] = useState<{
