@@ -55,17 +55,17 @@ const AddGallery = () => {
   };
 
   return (
-    <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center relative">
+    <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center relative p-4 sm:p-6 pt-16 sm:pt-20">
       <BackButton />
-      <div className="w-full max-w-2xl p-10">
-        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-gray-700">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 text-center">
+      <div className="w-full max-w-2xl">
+        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-8 lg:p-10 border border-gray-700">
+          <div className="flex justify-between items-center mb-6 sm:mb-8">
+            <div className="w-full">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
                 Добавление в галерею
               </h1>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
                 {fields.map((field) => (
                   <FormInput
                     key={field.name}

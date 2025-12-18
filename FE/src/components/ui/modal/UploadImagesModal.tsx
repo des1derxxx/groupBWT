@@ -2,6 +2,7 @@ import { IconTrash, IconUpload } from "@tabler/icons-react";
 import { GalleryButton } from "@/components/ui/auth/GalleryButton";
 import type { FilePreview } from "@/api/imagesApi";
 import type { FC } from "react";
+import { notifications } from "@mantine/notifications";
 
 type UploadImagesModalProps = {
   isOpen: boolean;
@@ -23,6 +24,8 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
   onUpload,
 }) => {
   if (!isOpen) return null;
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const FILE_NAME_REGEX = /^[a-zA-Z0-9._-]+$/;
 
   return (
     <div className="fixed inset-0 backdrop-blur-xl bg-opacity-50 flex items-center justify-center z-50">
@@ -38,21 +41,51 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
             <input
               type="file"
               multiple
-              accept="image/jpeg,image/png,image/webp"
+              accept="image/jpeg,image/png,image/jpg"
               className="hidden"
               onChange={(e) => {
                 if (!e.target.files) return;
 
-                const files = Array.from(e.target.files).map((file) => ({
-                  file,
-                  preview: URL.createObjectURL(file),
-                }));
+                const validFiles: FilePreview[] = [];
 
-                onFilesAdd(files);
+                Array.from(e.target.files).forEach((file) => {
+                  if (file.size > MAX_FILE_SIZE) {
+                    notifications.show({
+                      color: "red",
+                      title: "Файл слишком большой",
+                      message: `«${file.name}» превышает 5 МБ`,
+                      autoClose: 5000,
+                    });
+                    return;
+                  }
+
+                  if (!FILE_NAME_REGEX.test(file.name)) {
+                    notifications.show({
+                      color: "red",
+                      title: "Недопустимое имя файла",
+                      message:
+                        "Имя файла должно содержать только английские буквы, цифры, точки, дефисы или подчёркивания",
+                    });
+                    return;
+                  }
+
+                  validFiles.push({
+                    file,
+                    preview: URL.createObjectURL(file),
+                  });
+                });
+
+                if (validFiles.length) {
+                  onFilesAdd(validFiles);
+                }
+
                 e.target.value = "";
               }}
             />
           </label>
+          <div className="flex justify-center items-center">
+            <p className="text-white font-semibold">Макс. размер файла: 5МБ</p>
+          </div>
         </div>
 
         {selectedFiles.length > 0 && (
