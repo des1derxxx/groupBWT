@@ -7,6 +7,7 @@ import path from 'path';
 import { ImagesService } from 'src/images/images.service';
 import { GalleryQueryDto } from './dto/galleryQuery.dto';
 import { Prisma } from '@prisma/client';
+import Fuse from 'fuse.js';
 
 @Injectable()
 export class GalleriesService {
@@ -38,8 +39,8 @@ export class GalleriesService {
 
   async getAllUsersGallery(userId: string, query: GalleryQueryDto) {
     const {
-      page,
-      limit,
+      page = 1,
+      limit = 10,
       search,
       sortBy = 'createdAt',
       order = 'desc',
@@ -49,57 +50,55 @@ export class GalleriesService {
       maxImages,
     } = query;
 
-    const skip = (page - 1) * limit;
-
     const where: Prisma.GalleriesWhereInput = {
       userId,
     };
-
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
     if (from || to) {
-      where.createdAt = {
-        ...(from && { gte: new Date(from) }),
-        ...(to && { lte: new Date(to) }),
-      };
-    }
+      where.createdAt = {};
 
+      if (from) {
+        where.createdAt.gte = new Date(from);
+      }
+
+      if (to) {
+        const endOfDay = new Date(to);
+        endOfDay.setHours(23, 59, 59, 999);
+        where.createdAt.lte = endOfDay;
+      }
+    }
     if (minImages !== undefined || maxImages !== undefined) {
-      where.imagesCount = {
-        ...(minImages !== undefined && { gte: minImages }),
-        ...(maxImages !== undefined && { lte: maxImages }),
-      };
-    }
-    let orderBy: Prisma.GalleriesOrderByWithRelationInput;
+      where.imagesCount = {};
 
-    if (sortBy === 'imagesCount') {
-      orderBy = {
-        imagesCount: order,
-      };
-    } else {
-      orderBy = {
+      if (minImages !== undefined) {
+        where.imagesCount.gte = minImages;
+      }
+
+      if (maxImages !== undefined) {
+        where.imagesCount.lte = maxImages;
+      }
+    }
+    const items = await this.prisma.galleries.findMany({
+      where,
+      orderBy: {
         [sortBy]: order,
-      };
+      },
+    });
+    let filtered = items;
+    if (search) {
+      const fuse = new Fuse(items, {
+        keys: ['title', 'description'],
+        threshold: 0.4,
+      });
+
+      filtered = fuse.search(search).map((r) => r.item);
     }
 
-    const [items, total] = await Promise.all([
-      this.prisma.galleries.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy,
-      }),
-      this.prisma.galleries.count({ where }),
-    ]);
+    const start = (page - 1) * limit;
+    const paged = filtered.slice(start, start + limit);
 
     return {
-      items,
-      total,
+      items: paged,
+      total: filtered.length,
       page,
       limit,
     };

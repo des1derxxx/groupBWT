@@ -36,7 +36,10 @@ api.interceptors.response.use(
       console.log("Проблема с токеном ");
       localStorage.removeItem("access_token");
       const currentPath = window.location.pathname;
-      if (!currentPath.includes("/login") && !currentPath.includes("/register")) {
+      if (
+        !currentPath.includes("/login") &&
+        !currentPath.includes("/register")
+      ) {
         window.location.href = "/auth/login";
       }
     }
@@ -46,4 +49,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-

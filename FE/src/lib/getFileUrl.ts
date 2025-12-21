@@ -1,15 +1,19 @@
-import apiBase from "./axiosBase";
+import api from "./axios";
 
-const fileHost = (
-  apiBase.defaults.baseURL ??
-  window.location.origin
-).replace(/\/$/, "");
+const fileHost = (() => {
+  const baseURL = api.defaults.baseURL;
+
+  if (!baseURL) return window.location.origin;
+
+  return baseURL.replace(/\/api\/?$/, "").replace(/\/$/, "");
+})();
 
 export const getFileUrl = (path?: string) => {
   if (!path) return "";
+
   const cleanPath = path.startsWith("/")
     ? path.replace(/^\/api\//, "/")
     : `/${path.replace(/^\/api\//, "")}`;
+
   return `${fileHost}${cleanPath}`;
 };
-
