@@ -1,6 +1,4 @@
 import type { FC } from "react";
-import { GalleryButton } from "../auth/GalleryButton";
-import { CustomInput } from "../input/CustomInput";
 
 interface GalleryFiltersPanelProps {
   fromDate?: string;
@@ -64,7 +62,7 @@ export const GalleryFiltersPanel: FC<GalleryFiltersPanelProps> = ({
     minImages <= maxImages;
 
   return (
-    <div className="w-full h-full min-w-72 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 px-6 pt-6 pb-0 lg:pb-6 ">
+    <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 px-6 pt-6 pb-0 lg:pb-6">
       <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
         <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
         Фильтры
@@ -79,28 +77,22 @@ export const GalleryFiltersPanel: FC<GalleryFiltersPanelProps> = ({
 
           <div className="space-y-3">
             <div>
-              <CustomInput
+              <label className="block text-xs text-gray-400 mb-1.5">От</label>
+              <input
                 type="date"
-                label="От"
                 value={fromDate ?? ""}
-                max={toDate}
                 onChange={(e) => onFromDateChange(e.target.value || undefined)}
-                error={
-                  !dateValid ? "Дата начала позже даты окончания" : undefined
-                }
+                className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
             </div>
 
             <div>
-              <CustomInput
+              <label className="block text-xs text-gray-400 mb-1.5">До</label>
+              <input
                 type="date"
-                label="До"
                 value={toDate ?? ""}
-                min={fromDate}
                 onChange={(e) => onToDateChange(e.target.value || undefined)}
-                error={
-                  !dateValid ? "Дата начала позже даты окончания" : undefined
-                }
+                className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
             </div>
           </div>
@@ -120,40 +112,36 @@ export const GalleryFiltersPanel: FC<GalleryFiltersPanelProps> = ({
 
           <div className="space-y-3">
             <div>
-              <CustomInput
+              <label className="block text-xs text-gray-400 mb-1.5">
+                Минимум
+              </label>
+              <input
                 type="number"
-                label="Минимум"
-                min={0}
                 value={minImages ?? ""}
-                onKeyDown={(e) =>
-                  ["-", "e", "E", "+"].includes(e.key) && e.preventDefault()
-                }
                 onChange={(e) =>
                   onMinImagesChange(
                     e.target.value ? +e.target.value : undefined
                   )
                 }
                 placeholder="0"
-                error={!imagesValid ? "Минимум больше максимума" : undefined}
+                className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
             </div>
 
             <div>
-              <CustomInput
+              <label className="block text-xs text-gray-400 mb-1.5">
+                Максимум
+              </label>
+              <input
                 type="number"
-                label="Максимум"
-                min={0}
                 value={maxImages ?? ""}
-                onKeyDown={(e) =>
-                  ["-", "e", "E", "+"].includes(e.key) && e.preventDefault()
-                }
                 onChange={(e) =>
                   onMaxImagesChange(
                     e.target.value ? +e.target.value : undefined
                   )
                 }
                 placeholder="∞"
-                error={!imagesValid ? "Минимум больше максимума" : undefined}
+                className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
             </div>
           </div>
@@ -164,7 +152,12 @@ export const GalleryFiltersPanel: FC<GalleryFiltersPanelProps> = ({
             </div>
           )}
         </div>
-        <GalleryButton onClick={onReset}>Сбросить</GalleryButton>
+        <button
+          onClick={onReset}
+          className="w-full !bg-red-600 !hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg shadow-lg transition-all duration-200 hover:scale-[1.05] active:scale-[0.98] mt-2"
+        >
+          Сбросить
+        </button>
       </div>
     </div>
   );

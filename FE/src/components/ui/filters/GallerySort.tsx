@@ -1,5 +1,4 @@
 import type { FC } from "react";
-import { GalleryButton } from "../auth/GalleryButton";
 
 export type SortByOption = "createdAt" | "title" | "imagesCount";
 export type OrderOption = "asc" | "desc";
@@ -19,25 +18,26 @@ export const GallerySort: FC<GallerySortProps> = ({
 }) => {
   const toggleOrder = () => onOrderChange(order === "asc" ? "desc" : "asc");
   return (
-    <div className="flex items-end gap-2">
-      <div className="relative">
+    <div className="flex items-end gap-2 mb-2">
+      <div>
         <select
           value={sortBy}
           onChange={(e) => onSortByChange(e.target.value as SortByOption)}
-          className="appearance-none rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2 text-sm"
+          className="rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2 text-sm"
         >
           <option value="createdAt">Дата создания</option>
           <option value="title">Название</option>
           <option value="imagesCount">Кол-во изображений</option>
         </select>
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white">
-          ↓
-        </span>
       </div>
 
-      <GalleryButton onClick={toggleOrder} color="black">
+      <button
+        onClick={toggleOrder}
+        className="h-[38px] w-[38px] flex items-center justify-center rounded-lg border border-gray-600 bg-gray-800 hover:bg-gray-700 transition text-white"
+        title={order === "asc" ? "По возрастанию" : "По убыванию"}
+      >
         {order === "asc" ? "↑" : "↓"}
-      </GalleryButton>
+      </button>
     </div>
   );
 };

@@ -9,7 +9,6 @@ import { CorfirmDelete } from "@/components/ui/modal/corfirmDelete";
 import { GallerySort } from "@/components/ui/filters/GallerySort";
 import { GalleryFiltersPanel } from "@/components/ui/filters/GalleryFiltersPanel";
 import Search from "@/components/ui/filters/Search";
-import { GalleryButton } from "@/components/ui/auth/GalleryButton";
 
 const Gallery = () => {
   const navigate = useNavigate();
@@ -146,12 +145,8 @@ const Gallery = () => {
         position="left"
         className="lg:hidden"
         styles={{
-          header: {
-            padding: "16px",
-            backgroundColor: "#1f2937",
-            color: "white",
-          },
-          body: { padding: 0, height: "calc(100% - 60px)" },
+          header: { padding: '16px', backgroundColor: '#1f2937', color: 'white' },
+          body: { padding: 0, height: 'calc(100% - 60px)' },
         }}
       >
         <div className="flex flex-col h-full">
@@ -169,24 +164,32 @@ const Gallery = () => {
             />
           </div>
           <div className="p-4  bg-gray-800 border-t border-gray-700">
-            <GalleryButton
-              color="green"
+            <Button
+              variant="filled"
+              color="violet"
+              fullWidth
               onClick={() => setFiltersOpened(false)}
             >
               Применить и закрыть
-            </GalleryButton>
+            </Button>
           </div>
         </div>
       </Drawer>
 
       <div className="w-full p-3 sm:p-6 lg:p-8 flex-1">
         <div className="flex lg:hidden mb-3">
-          <GalleryButton color="blue" onClick={() => setFiltersOpened(true)}>
+          <Button
+            variant="light"
+            color="violet"
+            leftSection={<IconFilter size={18} />}
+            onClick={() => setFiltersOpened(true)}
+            fullWidth
+          >
             Фильтры
-          </GalleryButton>
+          </Button>
         </div>
 
-        <div className="w-full flex flex-col sm:flex-row justify-end items-center gap-2 mb-3 sm:mb-2">
+        <div className="w-full flex flex-col sm:flex-row justify-end gap-2 mb-3 sm:mb-2">
           <div className="flex-1 sm:flex-initial w-full">
             <Search
               search={search}
@@ -194,19 +197,22 @@ const Gallery = () => {
               cleanSearch={handleCleanSearch}
             />
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2">
             <GallerySort
               sortBy={sortBy}
               order={order}
               onSortByChange={setSortBy}
               onOrderChange={setOrder}
             />
-            <GalleryButton
+            <Button
+              variant="filled"
               color="green"
               onClick={() => navigate("/gallery/add")}
+              className="flex-1 sm:flex-initial"
             >
-              Добавить
-            </GalleryButton>
+              <span className="hidden sm:inline">Добавить</span>
+              <IconPlus size={18} className="sm:hidden" />
+            </Button>
           </div>
         </div>
         <div
@@ -235,23 +241,32 @@ const Gallery = () => {
 
                     <div className="absolute right-0 top-8 min-w-[160px] z-10 opacity-0 invisible  group-hover:opacity-100 group-hover:visible transition-all duration-300">
                       <div className="translate-y-[-20px] group-hover:translate-y-0 transition-transform duration-300 rounded-lg shadow-xl overflow-hidden">
-                        <GalleryButton
-                          color="gray"
+                        <button
                           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                             e.stopPropagation();
                             navigate(`/gallery/edit/${item.id}`);
                           }}
+                          className="w-full text-left px-4 py-2.5 mb-0.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200"
+                          style={{
+                            transitionDelay: "100ms",
+                            transitionProperty: "opacity, transform",
+                          }}
                         >
                           Редактировать
-                        </GalleryButton>
-                        <GalleryButton
+                        </button>
+                        <button
                           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                             e.stopPropagation();
                             handleDeleteClick(item);
                           }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200"
+                          style={{
+                            transitionDelay: "250ms",
+                            transitionProperty: "opacity, transform",
+                          }}
                         >
                           Удалить
-                        </GalleryButton>
+                        </button>
                       </div>
                     </div>
                   </div>

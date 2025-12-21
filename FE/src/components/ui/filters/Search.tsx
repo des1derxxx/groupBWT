@@ -1,6 +1,5 @@
 import type { FC } from "react";
 import { IconX } from "@tabler/icons-react";
-import { CustomInput } from "../input/CustomInput";
 
 interface SearcProps {
   search: string;
@@ -11,12 +10,15 @@ interface SearcProps {
 const Search: FC<SearcProps> = ({ search, onSearchChange, cleanSearch }) => {
   return (
     <div className="w-full rounded-xl  bg-opacity-50 relative">
-      <CustomInput
+      <input
         type="text"
+        placeholder="Поиск"
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="Поиск"
-        className="pr-10"
+        className="w-full rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2.5 text-sm 
+                   transition-all duration-200 placeholder-gray-400
+                   focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50
+                   hover:border-gray-500"
       />
       <IconX
         onClick={cleanSearch}

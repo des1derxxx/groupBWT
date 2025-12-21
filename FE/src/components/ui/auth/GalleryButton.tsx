@@ -6,8 +6,7 @@ interface GalleryButtonProps {
   children: React.ReactNode;
   disabled?: boolean;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  isRounded?: boolean;
-  color?: "red" | "green" | "blue" | "purple" | "gray" | "black";
+  color?: "red" | "green" | "blue" | "purple" | "gray";
 }
 
 export const GalleryButton: React.FC<GalleryButtonProps> = ({
@@ -16,7 +15,6 @@ export const GalleryButton: React.FC<GalleryButtonProps> = ({
   children,
   disabled = false,
   onClick,
-  isRounded = true,
   color = "red",
 }) => {
   const gradientClass = {
@@ -27,23 +25,16 @@ export const GalleryButton: React.FC<GalleryButtonProps> = ({
     purple:
       "from-purple-500 to-purple-300 hover:from-purple-500 hover:to-purple-400 hover:shadow-purple-500/50",
     gray: "from-gray-500 to-gray-300 hover:from-gray-500 hover:to-gray-400 hover:shadow-gray-500/50",
-    black: "bg-color-black",
   }[color];
-
-  const roundedClass = isRounded ? "rounded-2xl" : "rounded-none";
 
   return (
     <button
       onClick={onClick}
       disabled={isLoading || disabled}
-      className={`
-        w-full py-4 font-bold text-lg text-white
-        bg-gradient-to-r ${gradientClass}
-        ${roundedClass}
-        transform hover:scale-[1.02] active:scale-[0.98]
-        transition-all duration-300 shadow-xl
-        disabled:opacity-50 disabled:cursor-not-allowed
-      `}
+      className={`w-full py-4 rounded-xl font-bold text-lg text-white
+                  bg-gradient-to-r ${gradientClass}
+                  transform hover:scale-[1.02] active:scale-[0.98]
+                  transition-all duration-300 shadow-xl mt-6 disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       {isLoading ? loadingText : children}
     </button>

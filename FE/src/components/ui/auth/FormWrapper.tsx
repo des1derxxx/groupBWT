@@ -1,5 +1,4 @@
 import type { FC, ReactNode } from "react";
-import { GalleryButton } from "./GalleryButton";
 
 interface FormWrapperProps {
   children?: ReactNode;
@@ -43,9 +42,13 @@ const FormWrapper: FC<FormWrapperProps> = ({
               <div className="text-center mt-6">
                 <p className="text-gray-400 flex items-center gap-4 justify-center">
                   <span>{bottom.text}</span>
-                  <GalleryButton onClick={() => bottom.buttonOnClick?.()}>
+                  <button
+                    type="button"
+                    onClick={() => bottom.buttonOnClick?.()}
+                    className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+                  >
                     {bottom.buttonLabel}
-                  </GalleryButton>
+                  </button>
                 </p>
               </div>
             )}

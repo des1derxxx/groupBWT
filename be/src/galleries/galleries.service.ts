@@ -7,7 +7,6 @@ import path from 'path';
 import { ImagesService } from 'src/images/images.service';
 import { GalleryQueryDto } from './dto/galleryQuery.dto';
 import { Prisma } from '@prisma/client';
-import Fuse from 'fuse.js';
 
 @Injectable()
 export class GalleriesService {
@@ -39,8 +38,8 @@ export class GalleriesService {
 
   async getAllUsersGallery(userId: string, query: GalleryQueryDto) {
     const {
-      page = 1,
-      limit = 10,
+      page,
+      limit,
       search,
       sortBy = 'createdAt',
       order = 'desc',
@@ -50,32 +49,57 @@ export class GalleriesService {
       maxImages,
     } = query;
 
-    const items = await this.prisma.galleries.findMany({
-      where: {
-        userId,
-        ...(from && { createdAt: { gte: new Date(from) } }),
-        ...(to && { createdAt: { lte: new Date(to) } }),
-        ...(minImages !== undefined && { imagesCount: { gte: minImages } }),
-        ...(maxImages !== undefined && { imagesCount: { lte: maxImages } }),
-      },
-      orderBy: { [sortBy]: order },
-    });
+    const skip = (page - 1) * limit;
 
-    let filtered = items;
+    const where: Prisma.GalleriesWhereInput = {
+      userId,
+    };
+
     if (search) {
-      const fuse = new Fuse(items, {
-        keys: ['title', 'description'],
-        threshold: 0.4,
-      });
-      filtered = fuse.search(search).map((r) => r.item);
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
-    const start = (page - 1) * limit;
-    const paged = filtered.slice(start, start + limit);
+    if (from || to) {
+      where.createdAt = {
+        ...(from && { gte: new Date(from) }),
+        ...(to && { lte: new Date(to) }),
+      };
+    }
+
+    if (minImages !== undefined || maxImages !== undefined) {
+      where.imagesCount = {
+        ...(minImages !== undefined && { gte: minImages }),
+        ...(maxImages !== undefined && { lte: maxImages }),
+      };
+    }
+    let orderBy: Prisma.GalleriesOrderByWithRelationInput;
+
+    if (sortBy === 'imagesCount') {
+      orderBy = {
+        imagesCount: order,
+      };
+    } else {
+      orderBy = {
+        [sortBy]: order,
+      };
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.galleries.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+      }),
+      this.prisma.galleries.count({ where }),
+    ]);
 
     return {
-      items: paged,
-      total: filtered.length,
+      items,
+      total,
       page,
       limit,
     };
