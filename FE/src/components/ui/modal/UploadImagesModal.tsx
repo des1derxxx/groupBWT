@@ -3,6 +3,7 @@ import { GalleryButton } from "@/components/ui/auth/GalleryButton";
 import type { FilePreview } from "@/api/imagesApi";
 import type { FC } from "react";
 import { notifications } from "@mantine/notifications";
+import { CustomFileInput } from "../input/CustomFileInput";
 
 type UploadImagesModalProps = {
   isOpen: boolean;
@@ -13,6 +14,13 @@ type UploadImagesModalProps = {
   onFileRemove: (index: number) => void;
   onUpload: () => void;
 };
+
+interface CustomFileInputProps {
+  multiple?: boolean;
+  accept?: string;
+  onChange: (files: FileList) => void;
+  label: string;
+}
 
 export const UploadImagesModal: FC<UploadImagesModalProps> = ({
   isOpen,
@@ -37,18 +45,14 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
         <div className="mb-6">
           <label className="flex items-center justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition">
             <IconUpload className="mr-2" />
-            <span>Выбрать изображения</span>
-            <input
-              type="file"
+
+            <CustomFileInput
               multiple
               accept="image/jpeg,image/png,image/jpg"
-              className="hidden"
-              onChange={(e) => {
-                if (!e.target.files) return;
-
+              label="Выбрать изображения"
+              onChange={(files) => {
                 const validFiles: FilePreview[] = [];
-
-                Array.from(e.target.files).forEach((file) => {
+                Array.from(files).forEach((file) => {
                   if (file.size > MAX_FILE_SIZE) {
                     notifications.show({
                       color: "red",
@@ -78,8 +82,6 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
                 if (validFiles.length) {
                   onFilesAdd(validFiles);
                 }
-
-                e.target.value = "";
               }}
             />
           </label>
@@ -98,7 +100,7 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
               {selectedFiles.map((item, index) => (
                 <div
                   key={item.preview}
-                  className="relative group rounded-lg overflow-hidden bg-gray-700"
+                  className="relative group overflow-hidden"
                 >
                   <img
                     src={item.preview}
@@ -106,12 +108,13 @@ export const UploadImagesModal: FC<UploadImagesModalProps> = ({
                     className="w-full h-32 object-cover"
                   />
 
-                  <button
+                  <div className="p-1"></div>
+                  <GalleryButton
                     onClick={() => onFileRemove(index)}
-                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition"
+                    color="red"
                   >
-                    <IconTrash size={20} className="text-white" />
-                  </button>
+                    Удалить
+                  </GalleryButton>
 
                   <p className="text-white text-xs p-2 truncate bg-gray-900 bg-opacity-75">
                     {item.file.name}

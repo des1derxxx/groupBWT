@@ -2,6 +2,7 @@ import { Burger, Collapse, Group } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import classes from "./Header.module.css";
+import { GalleryButton } from "../ui/auth/GalleryButton";
 
 const links = [
   { link: "/gallery", label: "Галерея" },
@@ -47,12 +48,11 @@ const Header = () => {
             className={classes.burger}
           />
         </div>
-        <button
-          onClick={handleLogout}
-          className="px-6 py-2 !bg-red-600 !hover:bg-red-700 text-white rounded-xl font-semibold transition-all duration-300"
-        >
-          Выйти
-        </button>
+        <div className="flex items-center justify-center h-full max-w-24">
+          <GalleryButton onClick={handleLogout} color="red">
+            Выйти
+          </GalleryButton>
+        </div>
       </header>
       <Collapse in={opened} className={classes.mobileCollapse}>
         <div className={classes.mobileMenu}>{items}</div>
