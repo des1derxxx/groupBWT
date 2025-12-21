@@ -50,23 +50,46 @@ export class GalleriesService {
       maxImages,
     } = query;
 
-    const items = await this.prisma.galleries.findMany({
-      where: {
-        userId,
-        ...(from && { createdAt: { gte: new Date(from) } }),
-        ...(to && { createdAt: { lte: new Date(to) } }),
-        ...(minImages !== undefined && { imagesCount: { gte: minImages } }),
-        ...(maxImages !== undefined && { imagesCount: { lte: maxImages } }),
-      },
-      orderBy: { [sortBy]: order },
-    });
+    const where: Prisma.GalleriesWhereInput = {
+      userId,
+    };
+    if (from || to) {
+      where.createdAt = {};
 
+      if (from) {
+        where.createdAt.gte = new Date(from);
+      }
+
+      if (to) {
+        const endOfDay = new Date(to);
+        endOfDay.setHours(23, 59, 59, 999);
+        where.createdAt.lte = endOfDay;
+      }
+    }
+    if (minImages !== undefined || maxImages !== undefined) {
+      where.imagesCount = {};
+
+      if (minImages !== undefined) {
+        where.imagesCount.gte = minImages;
+      }
+
+      if (maxImages !== undefined) {
+        where.imagesCount.lte = maxImages;
+      }
+    }
+    const items = await this.prisma.galleries.findMany({
+      where,
+      orderBy: {
+        [sortBy]: order,
+      },
+    });
     let filtered = items;
     if (search) {
       const fuse = new Fuse(items, {
         keys: ['title', 'description'],
         threshold: 0.4,
       });
+
       filtered = fuse.search(search).map((r) => r.item);
     }
 

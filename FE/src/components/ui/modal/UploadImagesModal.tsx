@@ -1,4 +1,4 @@
-import { IconTrash, IconUpload } from "@tabler/icons-react";
+import { IconUpload } from "@tabler/icons-react";
 import { GalleryButton } from "@/components/ui/auth/GalleryButton";
 import type { FilePreview } from "@/api/imagesApi";
 import type { FC } from "react";
@@ -14,13 +14,6 @@ type UploadImagesModalProps = {
   onFileRemove: (index: number) => void;
   onUpload: () => void;
 };
-
-interface CustomFileInputProps {
-  multiple?: boolean;
-  accept?: string;
-  onChange: (files: FileList) => void;
-  label: string;
-}
 
 export const UploadImagesModal: FC<UploadImagesModalProps> = ({
   isOpen,
