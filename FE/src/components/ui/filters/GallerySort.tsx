@@ -24,7 +24,7 @@ export const GallerySort: FC<GallerySortProps> = ({
         <select
           value={sortBy}
           onChange={(e) => onSortByChange(e.target.value as SortByOption)}
-          className="appearance-none rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2 text-sm"
+          className="appearance-none rounded-lg border border-gray-600 bg-gray-800 text-white px-4 py-2.5 text-sm"
         >
           <option value="createdAt">Дата создания</option>
           <option value="title">Название</option>

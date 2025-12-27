@@ -45,6 +45,7 @@ export class UsersService {
 
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
     const { firstname, lastname, email, password } = updateUserDto;
+    console.log(firstname, lastname, email, password);
 
     const existingUser = await this.findOne(id);
     if (!existingUser) {

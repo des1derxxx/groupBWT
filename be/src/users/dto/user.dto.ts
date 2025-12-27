@@ -16,5 +16,5 @@ export class BaseUser {
   password: string;
 
   @ApiProperty()
-  createAt: Date;
+  createdAt: Date;
 }
