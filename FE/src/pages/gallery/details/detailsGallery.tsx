@@ -35,6 +35,10 @@ import { CorfirmDelete } from "@/components/ui/modal/corfirmDelete";
 import { ImageTransferModal } from "@/components/ui/modal/ImageTransferModal";
 import { UploadImagesModal } from "@/components/ui/modal/UploadImagesModal";
 import { FormNotification } from "@/components/ui/auth/FormNotification";
+import { GalleryMembersModal } from "@/components/ui/modal/GalleryMembersModal";
+import { IconUsers } from "@tabler/icons-react";
+import { getUserData } from "@/api/profileApi";
+import { getGalleryMembers, GalleryRole, type GalleryMember } from "@/api/galleryApi";
 
 const DetailsGallery = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,6 +61,7 @@ const DetailsGallery = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedGalleryId, setSelectedGalleryId] = useState<string>("");
   const [selectedFiles, setSelectedFiles] = useState<FilePreview[]>([]);
+  const [showMembersModal, setShowMembersModal] = useState(false);
 
   const [notification, setNotification] = useState({
     message: "",
@@ -69,6 +74,26 @@ const DetailsGallery = () => {
     queryFn: () => getOneGallery(id!),
     enabled: !!id,
   });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["userData"],
+    queryFn: getUserData,
+    retry: false,
+  });
+
+  const { data: members } = useQuery({
+    queryKey: ["gallery-members", gallery?.id],
+    queryFn: () => getGalleryMembers(gallery?.id!),
+    enabled: !!gallery?.id && !!currentUser?.id,
+    retry: false,
+    staleTime: 60_000,
+  });
+
+  const isOwner = currentUser?.id === gallery?.user?.id;
+  const userMember = (members || [])?.find((m: GalleryMember) => m.userId === currentUser?.id);
+  const hasFullAccess =
+    isOwner || userMember?.role === GalleryRole.FULL_ACCESS;
+  const canEdit = hasFullAccess;
 
   const { data: AllGallery } = useQuery<GalleryResponse>({
     queryKey: ["AllGallery", page],
@@ -230,15 +255,27 @@ const DetailsGallery = () => {
   };
 
   if (!gallery) {
-    return <div>Ошибка</div>;
+    return (
+      <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
+        <p className="text-white text-xl">Загрузка галереи...</p>
+      </div>
+    );
   }
 
   if (isLoading) {
-    return <p className="text-white">Загрузка...</p>;
+    return (
+      <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
+        <p className="text-white text-xl">Загрузка изображений...</p>
+      </div>
+    );
   }
 
   if (isError) {
-    return <p className="text-red-400">Ошибка загрузки</p>;
+    return (
+      <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
+        <p className="text-red-400 text-xl">Ошибка загрузки изображений</p>
+      </div>
+    );
   }
 
   const galleryData = (images as AxiosResponse<GalleryImagesData>)?.data;
@@ -280,20 +317,36 @@ const DetailsGallery = () => {
                   className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl text-white hover:text-gray-800 hover:bg-white/20 cursor-pointer transition-all"
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate(`/gallery/edit/${gallery.id}`);
+                    setShowMembersModal(true);
                   }}
+                  title="Участники галереи"
                 >
-                  <IconEdit size={20} className="sm:w-6 sm:h-6" />
+                  <IconUsers size={20} className="sm:w-6 sm:h-6" />
                 </div>
-                <div
-                  className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl text-white hover:text-gray-800 hover:bg-white/20 cursor-pointer transition-all"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowUploadModal(true);
-                  }}
-                >
-                  <IconUpload size={20} className="sm:w-6 sm:h-6" />
-                </div>
+                {canEdit && (
+                  <>
+                    <div
+                      className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl text-white hover:text-gray-800 hover:bg-white/20 cursor-pointer transition-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(`/gallery/edit/${gallery.id}`);
+                      }}
+                      title="Редактировать галерею"
+                    >
+                      <IconEdit size={20} className="sm:w-6 sm:h-6" />
+                    </div>
+                    <div
+                      className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl text-white hover:text-gray-800 hover:bg-white/20 cursor-pointer transition-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowUploadModal(true);
+                      }}
+                      title="Загрузить изображения"
+                    >
+                      <IconUpload size={20} className="sm:w-6 sm:h-6" />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2 text-cyan-100"></div>
@@ -311,32 +364,34 @@ const DetailsGallery = () => {
                     alt=""
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-1 right-1 sm:top-2 sm:right-2 flex gap-1 sm:gap-2 bg-black/40 rounded-lg p-1">
-                    <IconCopy
-                      onClick={(e: React.MouseEvent<SVGSVGElement>) => {
-                        e.stopPropagation();
-                        openTransferModal(img.id.toString(), "copy");
-                      }}
-                      size={18}
-                      className="sm:w-5 sm:h-5 text-white hover:text-blue-300 transition-colors cursor-pointer"
-                    />
-                    <IconReplace
-                      onClick={(e: React.MouseEvent<SVGSVGElement>) => {
-                        e.stopPropagation();
-                        openTransferModal(img.id.toString(), "move");
-                      }}
-                      size={18}
-                      className="sm:w-5 sm:h-5 text-white hover:text-blue-300 transition-colors cursor-pointer"
-                    />
-                    <IconTrash
-                      onClick={(e: React.MouseEvent<SVGSVGElement>) => {
-                        e.stopPropagation();
-                        handleDeleteImage(img.id.toString());
-                      }}
-                      size={18}
-                      className="sm:w-5 sm:h-5 text-white hover:text-red-400 transition-colors cursor-pointer"
-                    />
-                  </div>
+                  {canEdit && (
+                    <div className="absolute top-1 right-1 sm:top-2 sm:right-2 flex gap-1 sm:gap-2 bg-black/40 rounded-lg p-1">
+                      <IconCopy
+                        onClick={(e: React.MouseEvent<SVGSVGElement>) => {
+                          e.stopPropagation();
+                          openTransferModal(img.id.toString(), "copy");
+                        }}
+                        size={18}
+                        className="sm:w-5 sm:h-5 text-white hover:text-blue-300 transition-colors cursor-pointer"
+                      />
+                      <IconReplace
+                        onClick={(e: React.MouseEvent<SVGSVGElement>) => {
+                          e.stopPropagation();
+                          openTransferModal(img.id.toString(), "move");
+                        }}
+                        size={18}
+                        className="sm:w-5 sm:h-5 text-white hover:text-blue-300 transition-colors cursor-pointer"
+                      />
+                      <IconTrash
+                        onClick={(e: React.MouseEvent<SVGSVGElement>) => {
+                          e.stopPropagation();
+                          handleDeleteImage(img.id.toString());
+                        }}
+                        size={18}
+                        className="sm:w-5 sm:h-5 text-white hover:text-red-400 transition-colors cursor-pointer"
+                      />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -414,6 +469,15 @@ const DetailsGallery = () => {
         isPending={isPending}
         mode={transferModal.mode}
       />
+
+      {gallery && (
+        <GalleryMembersModal
+          isOpen={showMembersModal}
+          galleryId={gallery.id}
+          isOwner={isOwner}
+          onClose={() => setShowMembersModal(false)}
+        />
+      )}
     </div>
   );
 };

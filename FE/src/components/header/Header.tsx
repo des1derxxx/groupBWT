@@ -7,6 +7,7 @@ import { GalleryButton } from "../ui/auth/GalleryButton";
 const links = [
   { link: "/gallery", label: "Галерея" },
   { link: "/profile", label: "Профиль" },
+  { link: "/chat", label: "Чат" },
 ];
 
 const Header = () => {

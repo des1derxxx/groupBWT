@@ -13,6 +13,7 @@ export interface GalleryItem {
   createdAt: string;
   imagesCount: number;
   user: User;
+  members?: GalleryMember[];
 }
 
 export interface GalleryResponse {
@@ -103,4 +104,68 @@ export const moveImage = async (id: string, galleryId: string) => {
 export const copyImage = async (id: string, galleryId: string) => {
   const response = await api.post(`/images/copyImage/${id}`, { galleryId });
   return response;
+};
+export type GalleryRole = "VIEW_ONLY" | "FULL_ACCESS";
+
+export const GalleryRole = {
+  VIEW_ONLY: "VIEW_ONLY" as const,
+  FULL_ACCESS: "FULL_ACCESS" as const,
+} as const;
+
+export interface GalleryMember {
+  id: string;
+  role: GalleryRole;
+  createdAt: string;
+  userId: string;
+  galleryId: string;
+  user?: {
+    id: string;
+    email: string;
+    firstname?: string;
+    lastname?: string;
+  };
+}
+
+export interface AddMemberData {
+  email: string;
+  role: GalleryRole;
+}
+
+export interface UpdateMemberData {
+  role: GalleryRole;
+}
+
+export const getGalleryMembers = async (galleryId: string) => {
+  const response = await api.get(`/galleries/${galleryId}/members`);
+  return response.data;
+};
+
+export const addGalleryMember = async (
+  galleryId: string,
+  data: AddMemberData
+) => {
+  const response = await api.post(`/galleries/${galleryId}/members`, data);
+  return response.data;
+};
+
+export const updateGalleryMemberRole = async (
+  galleryId: string,
+  memberId: string,
+  data: UpdateMemberData
+) => {
+  const response = await api.patch(
+    `/galleries/${galleryId}/members/${memberId}`,
+    data
+  );
+  return response.data;
+};
+
+export const removeGalleryMember = async (
+  galleryId: string,
+  memberId: string
+) => {
+  const response = await api.delete(
+    `/galleries/${galleryId}/members/${memberId}`
+  );
+  return response.data;
 };

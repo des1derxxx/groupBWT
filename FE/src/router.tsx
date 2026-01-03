@@ -9,6 +9,7 @@ import { PublicRoute } from "./components/routes/PublicRoute";
 import { ProtectedRoute } from "./components/routes/ProtectedRoute";
 import EditGallery from "./pages/gallery/edit/editGallery";
 import DetailsGallery from "./pages/gallery/details/detailsGallery";
+import ChatPage from "./pages/chat/ChatPage";
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/chat",
+        element: (
+          <ProtectedRoute>
+            <ChatPage />
           </ProtectedRoute>
         ),
       },

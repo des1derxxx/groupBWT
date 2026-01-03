@@ -24,6 +24,8 @@ model Users {
   createdAt DateTime @default(now())
 
   galleries Galleries[]
+  chatMessage ChatMessage[]
+  galleryMembers GalleryMember[]
 
 }
 
@@ -39,6 +41,7 @@ model Galleries {
   user     Users @relation(fields: [userId], references: [id])
 
   images Images[]
+  members GalleryMember[]
 
 }
 
@@ -52,4 +55,36 @@ model Images {
   galleryId String  
   gallery Galleries @relation(fields: [galleryId], references: [id])
 
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId String
+  user     Users @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+}
+
+enum GalleryRole {
+  VIEW_ONLY
+  FULL_ACCESS
+}
+
+model GalleryMember {
+  id String @id @default(uuid())
+  role GalleryRole @default(VIEW_ONLY)
+  createdAt DateTime @default(now())
+
+  userId String
+  user Users @relation(fields: [userId], references: [id])
+
+  galleryId String
+  gallery Galleries @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, galleryId])
+  @@index([galleryId])
+  @@index([userId])
 }

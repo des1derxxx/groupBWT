@@ -1,4 +1,4 @@
-import { getAllGalleryUser, deleteOneGallery } from "@/api/galleryApi";
+import { getAllGalleryUser, deleteOneGallery, GalleryRole } from "@/api/galleryApi";
 import type { GalleryItem, GalleryResponse } from "@/api/galleryApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import { GallerySort } from "@/components/ui/filters/GallerySort";
 import { GalleryFiltersPanel } from "@/components/ui/filters/GalleryFiltersPanel";
 import Search from "@/components/ui/filters/Search";
 import { GalleryButton } from "@/components/ui/auth/GalleryButton";
+import { getUserData } from "@/api/profileApi";
 
 const Gallery = () => {
   const navigate = useNavigate();
@@ -40,6 +41,12 @@ const Gallery = () => {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, sortBy, order, fromDate, toDate, minImages, maxImages]);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["userData"],
+    queryFn: getUserData,
+    retry: false,
+  });
 
   const { data: AllGallery, isLoading } = useQuery<GalleryResponse>({
     queryKey: [
@@ -111,6 +118,18 @@ const Gallery = () => {
   const handleCleanSearch = () => {
     setSearch("");
     setDebouncedSearch("");
+  };
+
+  const canEditGallery = (gallery: GalleryItem): boolean => {
+    if (!currentUser?.id) return false;
+    const isOwner = currentUser.id === gallery.user?.id;
+    const userMember = gallery.members?.find((m) => m.userId === currentUser.id);
+    return isOwner || userMember?.role === GalleryRole.FULL_ACCESS;
+  };
+
+  const canDeleteGallery = (gallery: GalleryItem): boolean => {
+    if (!currentUser?.id) return false;
+    return currentUser.id === gallery.user?.id;
   };
 
   if (isLoading && !AllGallery) {
@@ -224,38 +243,44 @@ const Gallery = () => {
                           hover:bg-gray-650 transition-colors"
                 onClick={() => navigate(`/gallery/details/${item.id}`)}
               >
-                <div className="flex justify-end">
-                  <div className="relative group mb-2">
-                    <IconDotsVertical
-                      onClick={(e) => e.stopPropagation()}
-                      size={20}
-                      className="text-white hover:text-gray-600 cursor-pointer transition-colors"
-                    />
-                    <div className="absolute right-0 top-5 min-w-[160px] h-3 z-10" />
+                {(canEditGallery(item) || canDeleteGallery(item)) && (
+                  <div className="flex justify-end">
+                    <div className="relative group mb-2">
+                      <IconDotsVertical
+                        onClick={(e) => e.stopPropagation()}
+                        size={20}
+                        className="text-white hover:text-gray-600 cursor-pointer transition-colors"
+                      />
+                      <div className="absolute right-0 top-5 min-w-[160px] h-3 z-10" />
 
-                    <div className="absolute right-0 top-8 min-w-[160px] z-10 opacity-0 invisible  group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                      <div className="translate-y-[-20px] group-hover:translate-y-0 transition-transform duration-300 rounded-lg shadow-xl overflow-hidden">
-                        <GalleryButton
-                          color="gray"
-                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            e.stopPropagation();
-                            navigate(`/gallery/edit/${item.id}`);
-                          }}
-                        >
-                          Редактировать
-                        </GalleryButton>
-                        <GalleryButton
-                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            e.stopPropagation();
-                            handleDeleteClick(item);
-                          }}
-                        >
-                          Удалить
-                        </GalleryButton>
+                      <div className="absolute right-0 top-8 min-w-[160px] z-10 opacity-0 invisible  group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                        <div className="translate-y-[-20px] group-hover:translate-y-0 transition-transform duration-300 rounded-lg shadow-xl overflow-hidden">
+                          {canEditGallery(item) && (
+                            <GalleryButton
+                              color="gray"
+                              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                e.stopPropagation();
+                                navigate(`/gallery/edit/${item.id}`);
+                              }}
+                            >
+                              Редактировать
+                            </GalleryButton>
+                          )}
+                          {canDeleteGallery(item) && (
+                            <GalleryButton
+                              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                e.stopPropagation();
+                                handleDeleteClick(item);
+                              }}
+                            >
+                              Удалить
+                            </GalleryButton>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
                 <h2 className="text-lg font-bold text-white line-clamp-2">
                   {item.title}
                 </h2>

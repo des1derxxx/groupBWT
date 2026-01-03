@@ -14,16 +14,25 @@ export class ImagesService {
   constructor(private prisma: PrismaService) {}
 
   private async getUserGallery(galleryId: string, userId: string) {
-    const gallery = await this.prisma.galleries.findFirst({
+    const gallery = await this.prisma.galleries.findUnique({
       where: {
         id: galleryId,
-        userId: userId,
+      },
+      include: {
+        members: true,
       },
     });
 
     if (!gallery) {
+      throw new NotFoundException('Галерея не найдена');
+    }
+    if (gallery.userId === userId) {
+      return gallery;
+    }
+    const member = gallery.members.find((m) => m.userId === userId);
+    if (!member) {
       throw new NotFoundException(
-        'Галерея не найдена или не принадлежит пользователю',
+        'Галерея не найдена или нет доступа к этой галерее',
       );
     }
 
@@ -31,18 +40,29 @@ export class ImagesService {
   }
 
   private async getUserImage(imageId: string, userId: string) {
-    const image = await this.prisma.images.findFirst({
+    const image = await this.prisma.images.findUnique({
       where: {
         id: imageId,
+      },
+      include: {
         gallery: {
-          userId: userId,
+          include: {
+            members: true,
+          },
         },
       },
     });
 
     if (!image) {
+      throw new NotFoundException('Картинка не найдена');
+    }
+    if (image.gallery.userId === userId) {
+      return image;
+    }
+    const member = image.gallery.members.find((m) => m.userId === userId);
+    if (!member) {
       throw new NotFoundException(
-        'Картинка не найдена или не принадлежит пользователю',
+        'Картинка не найдена или нет доступа к этой галерее',
       );
     }
 

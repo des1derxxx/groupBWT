@@ -7,6 +7,7 @@ import { GalleriesModule } from './galleries/galleries.module';
 import { ImagesModule } from './images/images.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { join } from 'path';
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads/',
     }),
+    ChatModule,
   ],
   controllers: [],
   providers: [PrismaService],
