@@ -1,4 +1,8 @@
-import { getAllGalleryUser, deleteOneGallery, GalleryRole } from "@/api/galleryApi";
+import {
+  getAllGalleryUser,
+  deleteOneGallery,
+  GalleryRole,
+} from "@/api/galleryApi";
 import type { GalleryItem, GalleryResponse } from "@/api/galleryApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +36,7 @@ const Gallery = () => {
   const [maxImages, setMaxImages] = useState<number | undefined>(undefined);
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [filtersOpened, setFiltersOpened] = useState(false);
+  const [onlyMine, setOnlyMine] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -40,7 +45,16 @@ const Gallery = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, sortBy, order, fromDate, toDate, minImages, maxImages]);
+  }, [
+    debouncedSearch,
+    sortBy,
+    order,
+    fromDate,
+    toDate,
+    minImages,
+    maxImages,
+    onlyMine,
+  ]);
 
   const { data: currentUser } = useQuery({
     queryKey: ["userData"],
@@ -59,6 +73,7 @@ const Gallery = () => {
       toDate,
       minImages,
       maxImages,
+      onlyMine,
     ],
     queryFn: () =>
       getAllGalleryUser({
@@ -71,6 +86,7 @@ const Gallery = () => {
         to: toDate,
         minImages,
         maxImages,
+        onlyMine,
       }),
     placeholderData: (prev) => prev,
   });
@@ -113,6 +129,7 @@ const Gallery = () => {
     setMinImages(undefined);
     setMaxImages(undefined);
     setPage(1);
+    setOnlyMine(false);
   };
 
   const handleCleanSearch = () => {
@@ -123,7 +140,9 @@ const Gallery = () => {
   const canEditGallery = (gallery: GalleryItem): boolean => {
     if (!currentUser?.id) return false;
     const isOwner = currentUser.id === gallery.user?.id;
-    const userMember = gallery.members?.find((m) => m.userId === currentUser.id);
+    const userMember = gallery.members?.find(
+      (m) => m.userId === currentUser.id
+    );
     return isOwner || userMember?.role === GalleryRole.FULL_ACCESS;
   };
 
@@ -153,6 +172,8 @@ const Gallery = () => {
           onMinImagesChange={setMinImages}
           onMaxImagesChange={setMaxImages}
           onReset={handleResetFilters}
+          onlyMine={onlyMine}
+          onOnlyMineChange={setOnlyMine}
         />
       </div>
 
@@ -185,6 +206,8 @@ const Gallery = () => {
               onMinImagesChange={setMinImages}
               onMaxImagesChange={setMaxImages}
               onReset={handleResetFilters}
+              onlyMine={onlyMine}
+              onOnlyMineChange={setOnlyMine}
             />
           </div>
           <div className="p-4  bg-gray-800 border-t border-gray-700">
@@ -243,44 +266,61 @@ const Gallery = () => {
                           hover:bg-gray-650 transition-colors"
                 onClick={() => navigate(`/gallery/details/${item.id}`)}
               >
-                {(canEditGallery(item) || canDeleteGallery(item)) && (
-                  <div className="flex justify-end">
-                    <div className="relative group mb-2">
-                      <IconDotsVertical
-                        onClick={(e) => e.stopPropagation()}
-                        size={20}
-                        className="text-white hover:text-gray-600 cursor-pointer transition-colors"
-                      />
-                      <div className="absolute right-0 top-5 min-w-[160px] h-3 z-10" />
+                <div className="flex justify-between">
+                  <h2 className="text-lg font-bold text-white line-clamp-2 flex items-center gap-2">
+                    {item.ownership && (
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full 
+      ${item.ownership === "Моя" ? "bg-green-600" : "bg-blue-600"}`}
+                      >
+                        {item.ownership}
+                      </span>
+                    )}
+                  </h2>
+                  {(canEditGallery(item) || canDeleteGallery(item)) && (
+                    <div className="flex justify-end">
+                      <div className="relative group mb-2">
+                        <IconDotsVertical
+                          onClick={(e) => e.stopPropagation()}
+                          size={20}
+                          className="text-white hover:text-gray-600 cursor-pointer transition-colors"
+                        />
+                        <div className="absolute right-0 top-5 min-w-[160px] h-3 z-10" />
 
-                      <div className="absolute right-0 top-8 min-w-[160px] z-10 opacity-0 invisible  group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                        <div className="translate-y-[-20px] group-hover:translate-y-0 transition-transform duration-300 rounded-lg shadow-xl overflow-hidden">
-                          {canEditGallery(item) && (
-                            <GalleryButton
-                              color="gray"
-                              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                e.stopPropagation();
-                                navigate(`/gallery/edit/${item.id}`);
-                              }}
-                            >
-                              Редактировать
-                            </GalleryButton>
-                          )}
-                          {canDeleteGallery(item) && (
-                            <GalleryButton
-                              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                e.stopPropagation();
-                                handleDeleteClick(item);
-                              }}
-                            >
-                              Удалить
-                            </GalleryButton>
-                          )}
+                        <div className="absolute right-0 top-8 min-w-[160px] z-10 opacity-0 invisible  group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                          <div className="translate-y-[-20px] group-hover:translate-y-0 transition-transform duration-300 rounded-lg shadow-xl overflow-hidden">
+                            {canEditGallery(item) && (
+                              <GalleryButton
+                                color="gray"
+                                onClick={(
+                                  e: React.MouseEvent<HTMLButtonElement>
+                                ) => {
+                                  e.stopPropagation();
+                                  navigate(`/gallery/edit/${item.id}`);
+                                }}
+                              >
+                                Редактировать
+                              </GalleryButton>
+                            )}
+                            {canDeleteGallery(item) && (
+                              <GalleryButton
+                                onClick={(
+                                  e: React.MouseEvent<HTMLButtonElement>
+                                ) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(item);
+                                }}
+                              >
+                                Удалить
+                              </GalleryButton>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+                <div></div>
                 <h2 className="text-lg font-bold text-white line-clamp-2">
                   {item.title}
                 </h2>
@@ -290,6 +330,7 @@ const Gallery = () => {
                 <p className="text-amber-400 font-semibold">
                   Картинок: {item.imagesCount}
                 </p>
+                <div className="flex justify-center pt-1"></div>
                 <p className="text-gray-400 text-sm mt-2">
                   {new Date(item.createdAt).toLocaleDateString()}
                 </p>

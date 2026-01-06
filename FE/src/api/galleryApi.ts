@@ -14,6 +14,7 @@ export interface GalleryItem {
   imagesCount: number;
   user: User;
   members?: GalleryMember[];
+  ownership?: "Моя" | "Расшареная";
 }
 
 export interface GalleryResponse {
@@ -50,6 +51,7 @@ export const getAllGalleryUser = async (params: {
   to?: string;
   minImages?: number;
   maxImages?: number;
+  onlyMine?: boolean;
 }) => {
   const query = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {

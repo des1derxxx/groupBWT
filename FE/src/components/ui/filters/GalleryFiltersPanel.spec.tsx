@@ -9,6 +9,8 @@ describe("GalleryFiltersPanel Component", () => {
     onMinImagesChange: jest.fn(),
     onMaxImagesChange: jest.fn(),
     onReset: jest.fn(),
+    onlyMine: false,
+    onOnlyMineChange: jest.fn(),
   };
 
   beforeEach(() => {

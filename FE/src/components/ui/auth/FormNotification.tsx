@@ -23,7 +23,7 @@ export const FormNotification: React.FC<FormNotificationProps> = ({
       title={color === "green" ? "Успех" : "Ошибка"}
       style={{
         position: "fixed",
-        top: "20px",
+        top: "100px",
         right: "20px",
         zIndex: 9999,
       }}

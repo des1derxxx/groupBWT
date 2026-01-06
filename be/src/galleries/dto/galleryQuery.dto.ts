@@ -1,3 +1,4 @@
+import { Transform, Type } from 'class-transformer';
 import {
   IsOptional,
   IsString,
@@ -5,8 +6,8 @@ import {
   IsInt,
   Min,
   IsDateString,
+  IsBoolean,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class GalleryQueryDto {
   @IsOptional()
@@ -48,4 +49,9 @@ export class GalleryQueryDto {
   @IsInt()
   @Min(1)
   limit: number = 9;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true')
+  onlyMine?: boolean;
 }

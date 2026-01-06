@@ -38,7 +38,11 @@ import { FormNotification } from "@/components/ui/auth/FormNotification";
 import { GalleryMembersModal } from "@/components/ui/modal/GalleryMembersModal";
 import { IconUsers } from "@tabler/icons-react";
 import { getUserData } from "@/api/profileApi";
-import { getGalleryMembers, GalleryRole, type GalleryMember } from "@/api/galleryApi";
+import {
+  getGalleryMembers,
+  GalleryRole,
+  type GalleryMember,
+} from "@/api/galleryApi";
 
 const DetailsGallery = () => {
   const { id } = useParams<{ id: string }>();
@@ -90,9 +94,10 @@ const DetailsGallery = () => {
   });
 
   const isOwner = currentUser?.id === gallery?.user?.id;
-  const userMember = (members || [])?.find((m: GalleryMember) => m.userId === currentUser?.id);
-  const hasFullAccess =
-    isOwner || userMember?.role === GalleryRole.FULL_ACCESS;
+  const userMember = (members || [])?.find(
+    (m: GalleryMember) => m.userId === currentUser?.id
+  );
+  const hasFullAccess = isOwner || userMember?.role === GalleryRole.FULL_ACCESS;
   const canEdit = hasFullAccess;
 
   const { data: AllGallery } = useQuery<GalleryResponse>({
@@ -286,13 +291,13 @@ const DetailsGallery = () => {
     <div className="grow bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center p-3 sm:p-4 lg:p-6 pt-16 sm:pt-20 relative">
       <BackButton />
 
-
       <FormNotification
         visible={notification.visible}
         message={notification.message}
         color={notification.color}
         onClose={() => setNotification((prev) => ({ ...prev, visible: false }))}
       />
+
       <div className="w-full max-w-3xl">
         <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-gray-700">
           <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-4 sm:p-6 lg:p-8">

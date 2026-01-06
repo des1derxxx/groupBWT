@@ -12,6 +12,8 @@ interface GalleryFiltersPanelProps {
   onMinImagesChange: (value?: number) => void;
   onMaxImagesChange: (value?: number) => void;
   onReset: () => void;
+  onOnlyMineChange: (value: boolean) => void;
+  onlyMine: boolean;
 }
 
 const Calendar = () => (
@@ -55,6 +57,8 @@ export const GalleryFiltersPanel: FC<GalleryFiltersPanelProps> = ({
   onMinImagesChange,
   onMaxImagesChange,
   onReset,
+  onOnlyMineChange,
+  onlyMine,
 }) => {
   const dateValid =
     !fromDate || !toDate || new Date(fromDate) <= new Date(toDate);
@@ -155,6 +159,19 @@ export const GalleryFiltersPanel: FC<GalleryFiltersPanelProps> = ({
                 placeholder="∞"
                 error={!imagesValid ? "Минимум больше максимума" : undefined}
               />
+            </div>
+          </div>
+
+          <div className="border-t border-gray-700"></div>
+          <div className="space-y-3">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={onlyMine}
+                onChange={(e) => onOnlyMineChange(e.target.checked)}
+                className="accent-purple-500"
+              />
+              <p className="ml-3 text-white">Мои галереи</p>
             </div>
           </div>
 

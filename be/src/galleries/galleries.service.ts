@@ -60,12 +60,11 @@ export class GalleriesService {
       maxImages,
     } = query;
 
-    const where: Prisma.GalleriesWhereInput = {
-      OR: [
-        { userId },
-        { members: { some: { userId } } },
-      ],
-    };
+    const where: Prisma.GalleriesWhereInput = query.onlyMine
+      ? { userId }
+      : {
+          OR: [{ userId }, { members: { some: { userId } } }],
+        };
     if (from || to) {
       where.createdAt = {};
 
@@ -113,8 +112,19 @@ export class GalleriesService {
     const start = (page - 1) * limit;
     const paged = filtered.slice(start, start + limit);
 
+    const itemsWithOwnership = items.map((gallery) => {
+      const isOwner = gallery.userId === userId;
+      return {
+        ...gallery,
+        ownership: isOwner ? 'Моя' : 'Расшареная',
+      };
+    });
+
     return {
-      items: paged,
+      items: paged.map((g) => ({
+        ...g,
+        ownership: g.userId === userId ? 'Моя' : 'Расшареная',
+      })),
       total: filtered.length,
       page,
       limit,

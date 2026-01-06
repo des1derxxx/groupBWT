@@ -11,6 +11,12 @@ import {
 } from "@/api/galleryApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormNotification } from "@/components/ui/auth/FormNotification";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  addGalleryMemberSchema,
+  type AddGalleryMemberSchema,
+} from "../../schemas/addGalleryMemberSchema";
 
 interface GalleryMembersModalProps {
   isOpen: boolean;
@@ -26,12 +32,24 @@ export const GalleryMembersModal = ({
   onClose,
 }: GalleryMembersModalProps) => {
   const [showAddForm, setShowAddForm] = useState(false);
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<GalleryRole>(GalleryRole.VIEW_ONLY);
+  // const [email, setEmail] = useState("");
+  // const [role, setRole] = useState<GalleryRole>(GalleryRole.VIEW_ONLY);
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editingRole, setEditingRole] = useState<GalleryRole>(
     GalleryRole.VIEW_ONLY
   );
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<AddGalleryMemberSchema>({
+    resolver: zodResolver(addGalleryMemberSchema),
+    defaultValues: {
+      role: GalleryRole.VIEW_ONLY,
+    },
+  });
 
   const [notification, setNotification] = useState({
     message: "",
@@ -54,8 +72,7 @@ export const GalleryMembersModal = ({
       queryClient.invalidateQueries({
         queryKey: ["gallery-members", galleryId],
       });
-      setEmail("");
-      setRole(GalleryRole.VIEW_ONLY);
+      reset();
       setShowAddForm(false);
       setNotification({
         message: "Участник успешно добавлен",
@@ -74,13 +91,8 @@ export const GalleryMembersModal = ({
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: ({
-      memberId,
-      role,
-    }: {
-      memberId: string;
-      role: GalleryRole;
-    }) => updateGalleryMemberRole(galleryId, memberId, { role }),
+    mutationFn: ({ memberId, role }: { memberId: string; role: GalleryRole }) =>
+      updateGalleryMemberRole(galleryId, memberId, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["gallery-members", galleryId],
@@ -94,8 +106,7 @@ export const GalleryMembersModal = ({
     },
     onError: (error: any) => {
       setNotification({
-        message:
-          error.response?.data?.message || "Ошибка при изменении роли",
+        message: error.response?.data?.message || "Ошибка при изменении роли",
         color: "red",
         visible: true,
       });
@@ -103,8 +114,7 @@ export const GalleryMembersModal = ({
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: (memberId: string) =>
-      removeGalleryMember(galleryId, memberId),
+    mutationFn: (memberId: string) => removeGalleryMember(galleryId, memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["gallery-members", galleryId],
@@ -125,16 +135,8 @@ export const GalleryMembersModal = ({
     },
   });
 
-  const handleAddMember = () => {
-    if (!email.trim()) {
-      setNotification({
-        message: "Введите email",
-        color: "red",
-        visible: true,
-      });
-      return;
-    }
-    addMemberMutation.mutate({ email: email.trim(), role });
+  const handleAddMember = (data: AddGalleryMemberSchema) => {
+    addMemberMutation.mutate(data);
   };
 
   const handleStartEdit = (member: GalleryMember) => {
@@ -187,33 +189,44 @@ export const GalleryMembersModal = ({
                 <GalleryButton
                   color="blue"
                   onClick={() => setShowAddForm(true)}
-                  
                 >
-                  
                   Добавить участника
                 </GalleryButton>
               ) : (
-                <div className="bg-gray-700 p-4 rounded-lg space-y-4">
+                <form
+                  onSubmit={handleSubmit(handleAddMember)}
+                  className="bg-gray-700 p-4 rounded-lg space-y-4"
+                >
                   <div>
                     <label className="block text-sm font-semibold text-gray-300 mb-2">
                       Email пользователя
                     </label>
+
                     <input
                       type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
                       placeholder="user@example.com"
-                      className="w-full px-4 py-2 bg-gray-900 border border-gray-600 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-30 outline-none text-white placeholder-gray-500"
+                      {...register("email")}
+                      className="w-full px-4 py-2 bg-gray-900 border rounded-lg
+        focus:border-purple-500 focus:ring-2 focus:ring-purple-500
+        focus:ring-opacity-30 outline-none text-white placeholder-gray-500
+        ${errors.email ? 'border-red-500' : 'border-gray-600'}"
                     />
+
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-400">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
-                  <div>
+
+                  <div className="relative">
                     <label className="block text-sm font-semibold text-gray-300 mb-2">
                       Роль
                     </label>
+
                     <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value as GalleryRole)}
-                      className="w-full px-4 py-2 bg-gray-900 border border-gray-600 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-30 outline-none text-white"
+                      {...register("role")}
+                      className="w-full px-4 py-2 pr-10 bg-gray-900 border border-gray-600 rounded-lg text-white appearance-none"
                     >
                       <option value={GalleryRole.VIEW_ONLY}>
                         Только просмотр
@@ -222,31 +235,44 @@ export const GalleryMembersModal = ({
                         Полный доступ
                       </option>
                     </select>
+                    <div className="absolute inset-y-0 right-0 top-7 flex items-center pr-3 pointer-events-none">
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
                   </div>
+
                   <div className="flex gap-2">
                     <GalleryButton
                       color="green"
-                      onClick={handleAddMember}
                       disabled={addMemberMutation.isPending}
-                      
                     >
                       {addMemberMutation.isPending
                         ? "Добавление..."
                         : "Добавить"}
                     </GalleryButton>
+
                     <GalleryButton
                       color="gray"
                       onClick={() => {
+                        reset();
                         setShowAddForm(false);
-                        setEmail("");
-                        setRole(GalleryRole.VIEW_ONLY);
                       }}
-                      
                     >
                       Отмена
                     </GalleryButton>
                   </div>
-                </div>
+                </form>
               )}
             </div>
           )}
@@ -307,10 +333,7 @@ export const GalleryMembersModal = ({
                           >
                             Сохранить
                           </GalleryButton>
-                          <GalleryButton
-                            onClick={handleCancelEdit}
-                            color="red"
-                          >
+                          <GalleryButton onClick={handleCancelEdit} color="red">
                             Отмена
                           </GalleryButton>
                         </>
@@ -323,7 +346,9 @@ export const GalleryMembersModal = ({
                             <IconEdit size={20} />
                           </GalleryButton>
                           <GalleryButton
-                            onClick={() => removeMemberMutation.mutate(member.id)}
+                            onClick={() =>
+                              removeMemberMutation.mutate(member.id)
+                            }
                             disabled={removeMemberMutation.isPending}
                             color="red"
                           >
@@ -340,7 +365,7 @@ export const GalleryMembersModal = ({
         </div>
 
         <div className="p-6 border-t border-gray-700">
-          <GalleryButton color="gray" onClick={onClose} >
+          <GalleryButton color="gray" onClick={onClose}>
             Закрыть
           </GalleryButton>
         </div>
@@ -348,4 +373,3 @@ export const GalleryMembersModal = ({
     </div>
   );
 };
-
